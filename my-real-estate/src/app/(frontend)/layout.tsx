@@ -2,30 +2,36 @@ import type { Metadata } from 'next'
 import React from 'react'
 import './globals.css'
 import { theme } from '../../themes'
+import { template } from '../../templates/loader'
 
 export const metadata: Metadata = {
   title: theme.meta.title,
   description: theme.meta.description,
 }
 
+const navHtml = theme.navLinks.map(l => `<a href="${l.href}">${l.label}</a>`).join('\n')
+const processed = template.chromeHtml
+  .replaceAll('{{title}}', theme.name)
+  .replaceAll('{{nav}}', navHtml)
+const [headerHtml, footerHtml] = processed.split('{{content}}')
+
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body data-theme={theme.id}>
-        <nav className="nav">
-          <div className="nav-inner">
-            <a href="/" className="logo">{theme.name}</a>
-            <div className="nav-links">
-              {theme.navLinks.map((l) => (
-                <a key={l.href} href={l.href}>{l.label}</a>
-              ))}
-            </div>
-          </div>
-        </nav>
-        <main>{children}</main>
-        <footer className="footer">
-          <p>{theme.footer}</p>
-        </footer>
+      <head>
+        {template.config.fonts?.map((f) => (
+          <link key={f} rel="stylesheet" href={f} />
+        ))}
+        {template.config.externals?.map((f) => (
+          <link key={f} rel="stylesheet" href={f} />
+        ))}
+        <style dangerouslySetInnerHTML={{ __html: template.tokens }} />
+        <style dangerouslySetInnerHTML={{ __html: template.chromeCss }} />
+      </head>
+      <body>
+        <div dangerouslySetInnerHTML={{ __html: headerHtml }} />
+        <main className="content">{children}</main>
+        <div dangerouslySetInnerHTML={{ __html: footerHtml }} />
       </body>
     </html>
   )

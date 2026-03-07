@@ -21,9 +21,9 @@ html {
 }
 
 body {
-  font-family: var(--font-mono);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: var(--font);
+  background-color: var(--bg);
+  color: var(--fg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -37,8 +37,8 @@ body {
   top: 0;
   z-index: 100;
   height: 50px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
   display: grid;
   grid-template-columns: 1fr;
   align-items: center;
@@ -73,7 +73,7 @@ body {
   .header-status,
   .header-clock {
     display: flex;
-    border-left: 1px solid var(--border-color);
+    border-left: 1px solid var(--border);
   }
 
   .header-status {
@@ -93,7 +93,7 @@ body {
 
 /* Folder Accordion */
 .folder {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .folder-header {
@@ -115,7 +115,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border);
   font-size: 14px;
   font-weight: 700;
 }
@@ -133,14 +133,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--border);
 }
 
 .chevron-arrow {
   width: 10px;
   height: 10px;
-  border-right: 2px solid var(--border-color);
-  border-bottom: 2px solid var(--border-color);
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
   transform: rotate(45deg);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -165,7 +165,7 @@ body {
 }
 
 .folder-inner {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   padding: var(--spacing-md);
 }
 
@@ -193,7 +193,7 @@ body {
   font-size: 13px;
   line-height: 1.6;
   margin-bottom: var(--spacing-md);
-  color: var(--text-primary);
+  color: var(--fg);
 }
 
 .profile-bio p:last-child {
@@ -201,13 +201,13 @@ body {
 }
 
 .profile-meta {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .meta-row {
   display: grid;
   grid-template-columns: 120px 1fr;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   font-size: 12px;
 }
 
@@ -220,7 +220,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border);
   font-size: 11px;
   display: flex;
   align-items: center;
@@ -229,7 +229,7 @@ body {
 .meta-value {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--muted);
   display: flex;
   align-items: center;
 }
@@ -248,16 +248,16 @@ body {
 }
 
 .work-card {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .work-card-image {
   aspect-ratio: 1 / 1;
-  background-color: var(--bg-secondary);
+  background-color: var(--card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   position: relative;
   overflow: hidden;
 }
@@ -265,13 +265,13 @@ body {
 .shape-rect {
   width: 80px;
   height: 80px;
-  background-color: var(--text-primary);
+  background-color: var(--fg);
 }
 
 .shape-circle {
   width: 80px;
   height: 80px;
-  background-color: var(--text-primary);
+  background-color: var(--fg);
   border-radius: 50%;
 }
 
@@ -280,7 +280,7 @@ body {
   height: 0;
   border-left: 45px solid transparent;
   border-right: 45px solid transparent;
-  border-bottom: 80px solid var(--text-primary);
+  border-bottom: 80px solid var(--fg);
 }
 
 .shape-cross {
@@ -293,7 +293,7 @@ body {
 .shape-cross::after {
   content: '';
   position: absolute;
-  background-color: var(--text-primary);
+  background-color: var(--fg);
   top: 50%;
   left: 50%;
 }
@@ -324,7 +324,7 @@ body {
 
 .work-card-desc {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--muted);
   line-height: 1.5;
   margin-bottom: var(--spacing-sm);
 }
@@ -334,7 +334,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   padding: 2px 8px;
 }
 
@@ -368,13 +368,13 @@ body {
 .form-input,
 .form-textarea {
   width: 100%;
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 13px;
   padding: 10px var(--spacing-sm);
   background-color: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 0;
-  color: var(--text-primary);
+  color: var(--fg);
   outline: none;
   transition: background-color 0.2s ease;
   -webkit-appearance: none;
@@ -392,15 +392,15 @@ body {
 }
 
 .form-button {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
   font-weight: 700;
   padding: 12px var(--spacing-md);
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  border: 1px solid var(--border-color);
+  background-color: var(--accent);
+  color: var(--accent-fg);
+  border: 1px solid var(--border);
   border-radius: 0;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -418,7 +418,7 @@ body {
 }
 
 .social-links {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   align-self: start;
 }
 
@@ -429,8 +429,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   text-decoration: none;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
   transition: background-color 0.2s ease;
 }
 
@@ -455,15 +455,15 @@ body {
 /* Footer */
 .footer {
   height: 40px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--spacing-sm);
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--muted);
   flex-shrink: 0;
-  background-color: var(--bg-primary);
+  background-color: var(--bg);
 }
 
 .footer-version,

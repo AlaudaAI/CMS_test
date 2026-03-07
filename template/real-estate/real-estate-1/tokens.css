@@ -1,17 +1,17 @@
 :root {
-  --bg-primary: #b8c4a8;
-  --bg-secondary: rgba(162, 176, 144, 0.85);
-  --text-primary: #1a1a1a;
-  --border-color: #1a1a1a;
+  --bg: #b8c4a8;
+  --card-bg: rgba(162, 176, 144, 0.85);
+  --fg: #1a1a1a;
+  --border: #1a1a1a;
   --hover-bg: rgba(0, 0, 0, 0.03);
   --focus-bg: rgba(0, 0, 0, 0.05);
-  --btn-bg: #1a1a1a;
-  --btn-text: #b8c4a8;
-  --text-muted: rgba(26, 26, 26, 0.8);
+  --accent: #1a1a1a;
+  --accent-fg: #b8c4a8;
+  --muted: rgba(26, 26, 26, 0.8);
   --spacing-xs: 8px;
   --spacing-sm: 16px;
   --spacing-md: 24px;
   --spacing-lg: 40px;
   --spacing-xl: 60px;
-  --font-mono: 'Space Mono', 'Courier New', Monaco, monospace;
+  --font: 'Space Mono', 'Courier New', Monaco, monospace;
 }

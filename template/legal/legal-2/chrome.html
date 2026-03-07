@@ -1,9 +1,7 @@
 <!-- HEADER -->
 <nav class="nav">
   <a href="/" class="nav-logo">{{title}}</a>
-  <ul class="nav-links">
-    {{nav}}
-  </ul>
+  <div class="nav-links">{{nav}}</div>
   <button class="nav-hamburger" aria-label="Open menu" onclick="openMobileMenu()">
     <span></span>
     <span></span>
@@ -15,6 +13,8 @@
   <button class="mobile-menu-close" aria-label="Close menu" onclick="closeMobileMenu()">✕</button>
   {{nav}}
 </div>
+
+<main class="content">{{content}}</main>
 
 <!-- FOOTER -->
 <footer class="footer">
