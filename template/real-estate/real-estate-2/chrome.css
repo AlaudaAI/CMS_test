@@ -1,0 +1,270 @@
+/* ====== STICKY HEADER ====== */
+.content { padding-top: 56px; }
+
+.header {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: background var(--transition), border-color var(--transition);
+
+}
+
+.header.scrolled {
+
+  background: var(--nav-bg-scroll);
+  border-bottom-color: var(--fg);
+
+}
+
+.header__date {
+
+  font-family: var(--font-secondary);
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+
+}
+
+.header__brand {
+
+  font-family: var(--font-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+}
+
+.header__studio-link {
+
+  font-family: var(--font-secondary);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  transition: background var(--transition), color var(--transition);
+  border: 1px solid var(--fg);
+
+}
+
+.header__studio-link:hover {
+
+  background: var(--bg);
+  color: var(--fg);
+
+}
+
+/* ====== FOOTER ====== */
+.footer {
+
+  padding: var(--spacing-2xl) 20px var(--spacing-lg);
+
+}
+
+.footer__nav {
+
+  margin-bottom: var(--spacing-xl);
+
+}
+
+.footer__bottom {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: var(--spacing-lg);
+
+}
+
+.footer__copy, .footer__legal {
+
+  font-family: var(--font-secondary);
+  font-size: 0.55rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+
+}
+
+/* ====== RESPONSIVE ====== */
+@media (min-width: 768px) {
+
+  .content { padding-top: 60px; }
+  .header {
+    padding: 18px 32px;
+  }
+
+  .hero__card {
+    margin: 20px 32px;
+  }
+
+  .hero__title {
+    bottom: 32px;
+    left: 32px;
+    right: 32px;
+  }
+
+  .section-label {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .projects {
+    padding-left: 32px;
+  }
+
+  .projects__track {
+    padding-right: 32px;
+    gap: 20px;
+  }
+
+  .project-card {
+    width: 320px;
+    min-width: 320px;
+  }
+
+  .methodology {
+    padding: var(--spacing-2xl) 32px;
+  }
+
+  .methodology__image-wrap {
+    max-height: 640px;
+  }
+
+  .stat {
+    padding: var(--spacing-lg) 32px;
+    min-height: 200px;
+  }
+
+  .footer {
+    padding: var(--spacing-2xl) 32px var(--spacing-lg);
+  }
+
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat {
+    border-bottom: none;
+  }
+
+  .stat:nth-child(2n) {
+    border-right: 1px solid var(--fg);
+  }
+
+  .stat:last-child {
+    border-right: none;
+  }
+
+}
+
+@media (min-width: 1024px) {
+
+  .content { padding-top: 64px; }
+  .header {
+    padding: 20px 40px;
+  }
+
+  .hero__card {
+    margin: 20px 40px;
+    height: 75vh;
+  }
+
+  .hero__tags {
+    top: 28px;
+    left: 28px;
+  }
+
+  .hero__title {
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+  }
+
+  .section-label {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  .projects {
+    padding-left: 40px;
+  }
+
+  .projects__track {
+    padding-right: 40px;
+    gap: 24px;
+  }
+
+  .project-card {
+    width: 340px;
+    min-width: 340px;
+  }
+
+  .project-card__image-wrap {
+    height: 340px;
+  }
+
+  .methodology {
+    padding: 100px 40px;
+  }
+
+  .methodology__headline {
+    max-width: 700px;
+  }
+
+  .methodology__image-wrap {
+    max-width: 50%;
+    max-height: 700px;
+  }
+
+  .methodology__cta {
+    width: 100px;
+    height: 100px;
+    bottom: 28px;
+    right: 28px;
+  }
+
+  .methodology__cta-text {
+    font-size: 0.55rem;
+  }
+
+  .methodology__body {
+    font-size: 1rem;
+    max-width: 560px;
+  }
+
+  .stat {
+    padding: var(--spacing-xl) 40px;
+    min-height: 240px;
+  }
+
+  .footer {
+    padding: 100px 40px var(--spacing-lg);
+  }
+
+  .footer__link {
+    padding: 20px 0;
+  }
+
+}

@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../../../payload.config'
 import { requireAuth } from '../../../../../../lib/auth'
+import { getCurrentTenant } from '../../../../../../lib/tenant'
 import DashboardShell from '../../../../../../components/DashboardShell'
 import PostForm from '../../../../../../components/PostForm'
 import { notFound } from 'next/navigation'
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth()
+  const tenant = await getCurrentTenant()
   const { id } = await params
   const payload = await getPayload({ config })
 
@@ -31,7 +33,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <DashboardShell userEmail={user.email || ''}>
+    <DashboardShell userEmail={user.email || ''} themeName={tenant?.siteName || ''} hasMedia={true}>
       <div className="dash-page">
         <div className="dash-page-header">
           <h1>Edit Post</h1>

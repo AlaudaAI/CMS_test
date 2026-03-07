@@ -1,31 +1,59 @@
-import type { Metadata } from 'next'
 import React from 'react'
 import './globals.css'
-import { theme } from '../../themes'
+import { getCurrentTenant } from '../../lib/tenant'
+import { loadTemplate } from '../../templates/loader'
 
-export const metadata: Metadata = {
-  title: theme.meta.title,
-  description: theme.meta.description,
-}
+export const dynamic = 'force-dynamic'
 
-export default function FrontendLayout({ children }: { children: React.ReactNode }) {
+export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
+  const tenant = await getCurrentTenant()
+
+  if (!tenant) {
+    return (
+      <html lang="en">
+        <body>
+          <p>No tenant configured. Run <code>npm run seed</code> to set up.</p>
+        </body>
+      </html>
+    )
+  }
+
+  const templateId = typeof tenant.template === 'object' ? tenant.template.id : tenant.template
+  const template = await loadTemplate(templateId)
+
+  const navHtml = (tenant.navLinks || [])
+    .map((l: { label: string; href: string }) => `<a href="${l.href}">${l.label}</a>`)
+    .join('\n')
+
+  const processed = template.chromeHtml
+    .replaceAll('{{title}}', tenant.siteName)
+    .replaceAll('{{nav}}', navHtml)
+
+  const parts = processed.split('{{content}}')
+  const headerHtml = parts[0] ?? ''
+  const footerHtml = parts[1] ?? ''
+
+  const metaTitle = tenant.meta?.title || tenant.siteName
+  const metaDesc = tenant.meta?.description || ''
+
   return (
     <html lang="en">
-      <body data-theme={theme.id}>
-        <nav className="nav">
-          <div className="nav-inner">
-            <a href="/" className="logo">{theme.name}</a>
-            <div className="nav-links">
-              {theme.navLinks.map((l) => (
-                <a key={l.href} href={l.href}>{l.label}</a>
-              ))}
-            </div>
-          </div>
-        </nav>
-        <main>{children}</main>
-        <footer className="footer">
-          <p>{theme.footer}</p>
-        </footer>
+      <head>
+        <title>{metaTitle}</title>
+        {metaDesc && <meta name="description" content={metaDesc} />}
+        {template.config.fonts?.map((f) => (
+          <link key={f} rel="stylesheet" href={f} />
+        ))}
+        {template.config.externals?.map((f) => (
+          <link key={f} rel="stylesheet" href={f} />
+        ))}
+        <style dangerouslySetInnerHTML={{ __html: template.tokens || '' }} />
+        <style dangerouslySetInnerHTML={{ __html: template.chromeCss || '' }} />
+      </head>
+      <body>
+        <div dangerouslySetInnerHTML={{ __html: headerHtml }} />
+        <main className="content">{children}</main>
+        <div dangerouslySetInnerHTML={{ __html: footerHtml }} />
       </body>
     </html>
   )

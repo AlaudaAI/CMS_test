@@ -5,21 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "tsx src/seed.ts && next build",
     "start": "next start",
-    "seed": "tsx src/seed.ts",
-    "dev:lawfirm": "NEXT_PUBLIC_SITE_THEME=lawfirm next dev",
-    "build:lawfirm": "NEXT_PUBLIC_SITE_THEME=lawfirm next build",
-    "start:lawfirm": "NEXT_PUBLIC_SITE_THEME=lawfirm next start",
-    "seed:lawfirm": "tsx src/seed-lawfirm.ts",
-    "build:both": "NEXT_DIST_DIR=.next-realestate next build && NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm next build",
-    "start:both": "NEXT_DIST_DIR=.next-realestate next start -p 3000 & NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm DATABASE_URL=file:./data/payload-lawfirm.db next start -p 3001 & wait"
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@payloadcms/db-sqlite": "^3.78.0",
-    "@payloadcms/next": "^3.78.0",
-    "@payloadcms/plugin-multi-tenant": "^3.78.0",
-    "@payloadcms/richtext-lexical": "^3.78.0",
+    "@payloadcms/db-vercel-postgres": "3.78.0",
+    "@payloadcms/storage-vercel-blob": "3.78.0",
+    "@payloadcms/drizzle": "3.78.0",
+    "@payloadcms/next": "3.78.0",
+    "@payloadcms/plugin-multi-tenant": "3.78.0",
+    "@payloadcms/richtext-lexical": "3.78.0",
     "@tiptap/extension-image": "^3.20.0",
     "@tiptap/extension-link": "^3.20.0",
     "@tiptap/extension-placeholder": "^3.20.0",
@@ -29,10 +25,13 @@
     "@tiptap/starter-kit": "^3.20.0",
     "graphql": "^16.13.0",
     "next": "^15.3.9",
-    "payload": "^3.78.0",
+    "payload": "3.78.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sharp": "^0.34.5"
+  },
+  "overrides": {
+    "@payloadcms/ui": "$payload"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",

@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../payload.config'
 import { requireAuth } from '../../../../lib/auth'
+import { getCurrentTenant } from '../../../../lib/tenant'
 import DashboardShell from '../../../../components/DashboardShell'
 import { CreateUserForm, DeleteUserButton } from './UsersClient'
 
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function UsersPage() {
   const user = await requireAuth()
+  const tenant = await getCurrentTenant()
   const payload = await getPayload({ config })
   const { docs: users } = await payload.find({
     collection: 'users',
@@ -19,7 +21,7 @@ export default async function UsersPage() {
   const isAdmin = (user as unknown as Record<string, unknown>).role === 'admin'
 
   return (
-    <DashboardShell userEmail={user.email || ''}>
+    <DashboardShell userEmail={user.email || ''} themeName={tenant?.siteName || ''} hasMedia={true}>
       <div className="dash-page">
         <div className="dash-page-header">
           <h1>Users</h1>
