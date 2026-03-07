@@ -1,0 +1,24 @@
+:root {
+  --bg-primary: #f5f0ea;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-muted: #a8a8a8;
+  --input-bg: #ebe5dc;
+  --border-subtle: #e0dbd4;
+  --nav-text: #ffffff;
+  --shadow-card: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 12px 48px rgba(0, 0, 0, 0.12);
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  --spacing-4xl: 96px;
+  --content-max: 1200px;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
