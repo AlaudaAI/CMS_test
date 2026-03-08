@@ -15,7 +15,9 @@ export default async function FrontendLayout({ children }: { children: React.Rea
   const processed = template.chromeHtml
     .replaceAll('{{title}}', theme.name)
     .replaceAll('{{nav}}', navHtml)
-  const [headerHtml, footerHtml] = processed.split('{{content}}')
+  const parts = processed.split('{{content}}')
+  const headerHtml = parts[0] ?? ''
+  const footerHtml = parts[1] ?? ''
 
   return (
     <html lang="en">
