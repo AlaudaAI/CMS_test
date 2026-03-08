@@ -13,10 +13,10 @@
     "start:lawfirm": "NEXT_PUBLIC_SITE_THEME=lawfirm next start",
     "seed:lawfirm": "tsx src/seed-lawfirm.ts",
     "build:both": "NEXT_DIST_DIR=.next-realestate next build && NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm next build",
-    "start:both": "NEXT_DIST_DIR=.next-realestate next start -p 3000 & NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm DATABASE_URL=file:./data/payload-lawfirm.db next start -p 3001 & wait"
+    "start:both": "NEXT_DIST_DIR=.next-realestate next start -p 3000 & NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm next start -p 3001 & wait"
   },
   "dependencies": {
-    "@payloadcms/db-sqlite": "^3.78.0",
+    "@payloadcms/db-postgres": "^3.78.0",
     "@payloadcms/next": "^3.78.0",
     "@payloadcms/plugin-multi-tenant": "^3.78.0",
     "@payloadcms/richtext-lexical": "^3.78.0",
