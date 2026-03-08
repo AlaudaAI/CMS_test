@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../../../payload.config'
 import { requireAuth } from '../../../../../../lib/auth'
-import { getTheme } from '../../../../../../themes'
+import { theme } from '../../../../../../themes'
 import DashboardShell from '../../../../../../components/DashboardShell'
 import PostForm from '../../../../../../components/PostForm'
 import { notFound } from 'next/navigation'
@@ -10,7 +10,6 @@ export const dynamic = 'force-dynamic'
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth()
-  const theme = await getTheme()
   const { id } = await params
   const payload = await getPayload({ config })
 

@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../payload.config'
 import { requireAuth } from '../../../../lib/auth'
-import { getTheme } from '../../../../themes'
+import { theme } from '../../../../themes'
 import DashboardShell from '../../../../components/DashboardShell'
 import Link from 'next/link'
 import { DeletePostButton } from './DeletePostButton'
@@ -10,7 +10,6 @@ export const dynamic = 'force-dynamic'
 
 export default async function PostsPage() {
   const user = await requireAuth()
-  const theme = await getTheme()
   const payload = await getPayload({ config })
   const { docs: posts } = await payload.find({
     collection: 'posts',

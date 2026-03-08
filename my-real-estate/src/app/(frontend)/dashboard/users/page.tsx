@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../payload.config'
 import { requireAuth } from '../../../../lib/auth'
-import { getTheme } from '../../../../themes'
+import { theme } from '../../../../themes'
 import DashboardShell from '../../../../components/DashboardShell'
 import { CreateUserForm, DeleteUserButton } from './UsersClient'
 
@@ -9,7 +9,6 @@ export const dynamic = 'force-dynamic'
 
 export default async function UsersPage() {
   const user = await requireAuth()
-  const theme = await getTheme()
   const payload = await getPayload({ config })
   const { docs: users } = await payload.find({
     collection: 'users',
