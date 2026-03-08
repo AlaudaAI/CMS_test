@@ -1,11 +1,12 @@
 import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
 import Link from 'next/link'
-import { theme } from '../../../themes'
+import { getTheme } from '../../../themes'
 
 export const dynamic = 'force-dynamic'
 
 export default async function BlogPage() {
+  const theme = await getTheme()
   const payload = await getPayload({ config: configPromise })
 
   const { docs: posts } = await payload.find({

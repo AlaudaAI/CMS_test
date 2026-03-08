@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode } from 'react'
-import { theme } from '../themes'
 
 const allNavItems = [
   { href: '/dashboard/posts', label: 'Posts', icon: '📝', requiresMedia: false },
@@ -14,14 +13,18 @@ const allNavItems = [
 export default function DashboardShell({
   children,
   userEmail,
+  themeName,
+  hasMedia,
 }: {
   children: ReactNode
   userEmail: string
+  themeName: string
+  hasMedia: boolean
 }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const navItems = allNavItems.filter((item) => !item.requiresMedia || theme.hasMedia)
+  const navItems = allNavItems.filter((item) => !item.requiresMedia || hasMedia)
 
   async function handleLogout() {
     await fetch('/api/users/logout', { method: 'POST' })
@@ -33,7 +36,7 @@ export default function DashboardShell({
     <div className="dash">
       <aside className="dash-sidebar">
         <div className="dash-brand">
-          <Link href="/">{theme.name}</Link>
+          <Link href="/">{themeName}</Link>
         </div>
         <nav className="dash-nav">
           {navItems.map((item) => (

@@ -1,6 +1,7 @@
-import { theme } from '../../themes'
+import { getTheme } from '../../themes'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const theme = await getTheme()
   return (
     <>
       <section className="hero">
