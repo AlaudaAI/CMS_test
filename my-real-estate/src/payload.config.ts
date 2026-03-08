@@ -8,6 +8,8 @@ import { fileURLToPath } from 'url'
 import { Posts } from './collections/Posts'
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
+import { Services } from './collections/Services'
+import { Staff } from './collections/Staff'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,7 +25,7 @@ export default buildConfig({
       description: 'Content management for Luxe Realty blog and media.',
     },
   },
-  collections: [Users, Media, Posts],
+  collections: [Users, Media, Posts, Services, Staff],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'default-secret',
   typescript: {
