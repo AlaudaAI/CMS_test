@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@payloadcms/db-vercel-postgres": "^3.78.0",
+    "@payloadcms/drizzle": "^3.78.0",
     "@payloadcms/next": "^3.78.0",
     "@payloadcms/plugin-multi-tenant": "^3.78.0",
     "@payloadcms/richtext-lexical": "^3.78.0",
