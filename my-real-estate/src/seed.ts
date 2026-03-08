@@ -1,8 +1,12 @@
 import { getPayload } from 'payload'
+import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
 
 const seed = async () => {
   const payload = await getPayload({ config })
+
+  // Push schema to database (creates tables if they don't exist)
+  await pushDevSchema(payload.db as any)
 
   // Create admin user
   try {
