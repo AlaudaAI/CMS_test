@@ -16,7 +16,7 @@
     "start:both": "NEXT_DIST_DIR=.next-realestate next start -p 3000 & NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_DIST_DIR=.next-lawfirm next start -p 3001 & wait"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "^3.78.0",
+    "@payloadcms/db-vercel-postgres": "^3.78.0",
     "@payloadcms/next": "^3.78.0",
     "@payloadcms/plugin-multi-tenant": "^3.78.0",
     "@payloadcms/richtext-lexical": "^3.78.0",
