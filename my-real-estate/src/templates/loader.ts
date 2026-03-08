@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 const templateId = process.env.NEXT_PUBLIC_SITE_TEMPLATE || 'real-estate/real-estate-1'
-const templateDir = path.join(process.cwd(), '..', 'template', templateId)
+const templateDir = path.join(process.cwd(), 'template', templateId)
 
 function readFile(name: string): string {
   try { return fs.readFileSync(path.join(templateDir, name), 'utf-8') }
