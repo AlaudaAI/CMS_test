@@ -1,13 +1,19 @@
 import path from 'path'
 import { buildConfig } from 'payload'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Posts } from './collections/Posts'
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
+import { Templates } from './collections/Templates'
+import { Tenants } from './collections/Tenants'
+import { Services } from './collections/extensions/Services'
+import { Staff } from './collections/extensions/Staff'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,20 +25,34 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     meta: {
-      titleSuffix: ' — Luxe Realty CMS',
-      description: 'Content management for Luxe Realty blog and media.',
+      titleSuffix: ' — CMS Platform',
     },
   },
-  collections: [Users, Media, Posts],
+  collections: [Users, Media, Posts, Templates, Tenants, Services, Staff],
+  plugins: [
+    ...(process.env.BLOB_READ_WRITE_TOKEN
+      ? [vercelBlobStorage({ collections: { media: true }, token: process.env.BLOB_READ_WRITE_TOKEN })]
+      : []),
+    multiTenantPlugin({
+      collections: {
+        posts: {},
+        media: {},
+        services: {},
+        staff: {},
+      },
+      userHasAccessToAllTenants: (user: any) => user?.role === 'admin',
+    }),
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'default-secret',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./data/payload.db',
+  db: vercelPostgresAdapter({
+    pool: {
+      connectionString: process.env.POSTGRES_URL,
     },
+    push: true,
   }),
   sharp,
 })

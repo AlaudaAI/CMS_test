@@ -1,30 +1,34 @@
 import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
 import Link from 'next/link'
-import { theme } from '../../../themes'
 
 export const dynamic = 'force-dynamic'
 
 export default async function BlogPage() {
   const payload = await getPayload({ config: configPromise })
 
-  const { docs: posts } = await payload.find({
-    collection: 'posts',
-    where: { status: { equals: 'published' } },
-    sort: '-publishedAt',
-    limit: 20,
-  })
+  let posts: Awaited<ReturnType<typeof payload.find>>['docs'] = []
+  try {
+    const result = await payload.find({
+      collection: 'posts',
+      where: { status: { equals: 'published' } },
+      sort: '-publishedAt',
+      limit: 20,
+    })
+    posts = result.docs
+  } catch {
+    // Table may not exist yet before first migration
+  }
 
   return (
     <>
       <div className="page-header">
-        <h1>{theme.blog.heading}</h1>
-        <p>{theme.blog.sub}</p>
+        <h1>Blog</h1>
       </div>
 
       {posts.length === 0 ? (
         <div className="empty-state">
-          <p>No posts yet. Create your first post in the <a href="/dashboard" style={{ textDecoration: 'underline' }}>dashboard</a>.</p>
+          <p>No posts yet. Create your first post in the <a href="/admin" style={{ textDecoration: 'underline' }}>admin panel</a>.</p>
         </div>
       ) : (
         <div className="blog-grid">

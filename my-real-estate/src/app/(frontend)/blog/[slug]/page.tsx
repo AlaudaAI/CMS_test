@@ -11,14 +11,20 @@ export default async function BlogPostPage({ params }: Args) {
   const { slug } = await params
   const payload = await getPayload({ config: configPromise })
 
-  const { docs } = await payload.find({
-    collection: 'posts',
-    where: {
-      slug: { equals: slug },
-      status: { equals: 'published' },
-    },
-    limit: 1,
-  })
+  let docs: Awaited<ReturnType<typeof payload.find>>['docs'] = []
+  try {
+    const result = await payload.find({
+      collection: 'posts',
+      where: {
+        slug: { equals: slug },
+        status: { equals: 'published' },
+      },
+      limit: 1,
+    })
+    docs = result.docs
+  } catch {
+    return notFound()
+  }
 
   const post = docs[0]
   if (!post) return notFound()
