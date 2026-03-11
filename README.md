@@ -1,4 +1,4 @@
-# my_CMS_test
+# CMS
 
 Multi-tenant CMS built with **Payload CMS 3** + **Next.js 15**.
 Supports multiple tenants (e.g. real estate agencies) with domain-based routing and swappable visual templates.
