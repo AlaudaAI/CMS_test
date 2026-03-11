@@ -1,5 +1,6 @@
 import path from 'path'
 import { buildConfig } from 'payload'
+import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -48,11 +49,14 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.POSTGRES_URL,
-    },
-    push: true,
-  }),
+  db: process.env.POSTGRES_URL
+    ? postgresAdapter({
+        pool: { connectionString: process.env.POSTGRES_URL },
+        push: true,
+      })
+    : sqliteAdapter({
+        client: { url: `file:${path.resolve(dirname, '..', 'data', 'cms.db')}` },
+        push: true,
+      }),
   sharp,
 })
