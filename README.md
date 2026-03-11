@@ -32,6 +32,15 @@ Open http://localhost:3000 — that's it.
 
 Two demo tenants are seeded: a real estate agency (port 3000) and a law firm (port 3001), each with their own template and blog posts.
 
+## Try It: Create a Blog Post
+
+1. Go to http://localhost:3000/admin and log in (`admin@platform.com` / `changeme123`)
+2. Click **Posts** → **Create New**
+3. Pick a **Tenant** (e.g. Luxe Realty)
+4. Fill in **Title**, **Slug** (e.g. `my-first-post`), and some **Content**
+5. Set **Status** to **Published**, hit **Save**
+6. Visit http://localhost:3000/blog/my-first-post — your post is live
+
 ## Using PostgreSQL (optional)
 
 For production or if you prefer Postgres, set `POSTGRES_URL` in your `.env`:
