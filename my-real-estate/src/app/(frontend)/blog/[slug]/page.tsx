@@ -2,6 +2,7 @@ import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { getCurrentTenant } from '../../../../lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +10,9 @@ type Args = { params: Promise<{ slug: string }> }
 
 export default async function BlogPostPage({ params }: Args) {
   const { slug } = await params
+  const tenant = await getCurrentTenant()
+  if (!tenant) return notFound()
+
   const payload = await getPayload({ config: configPromise })
 
   let docs: Awaited<ReturnType<typeof payload.find>>['docs'] = []
@@ -18,6 +22,7 @@ export default async function BlogPostPage({ params }: Args) {
       where: {
         slug: { equals: slug },
         status: { equals: 'published' },
+        tenant: { equals: tenant.id },
       },
       limit: 1,
     })

@@ -1,67 +1,37 @@
-# CMS
+# Multi-Tenant CMS
 
-Multi-tenant CMS built with **Payload CMS 3** + **Next.js 15**.
-Supports multiple tenants (e.g. real estate agencies) with domain-based routing and swappable visual templates.
+A multi-tenant CMS built with Payload CMS 3 + Next.js 15. Each tenant gets its own website with custom templates — managed from one admin panel.
 
-## Project Structure
+## Requirements
 
-```
-my_CMS_test/
-├── template/                        # Visual templates (pure HTML/CSS, no JS)
-│   ├── real-estate/
-│   │   ├── real-estate-1/           #   Brutalist grid layout
-│   │   └── real-estate-2/           #   Editorial / magazine layout
-│   └── legal/
-│       ├── legal-1/                 #   Sidebar navigation layout
-│       └── legal-2/                 #   Classic top-nav layout
-│
-├── TEMPLATE_GUIDE.md                # Template authoring guide
-│
-└── my-real-estate/                  # Next.js + Payload app
-    └── src/
-        ├── payload.config.ts        # Payload config (collections, DB, plugins)
-        ├── collections/             # Posts, Media, Services, Staff, Users, Tenants, Templates
-        ├── templates/loader.ts      # Reads template from DB + disk at runtime
-        ├── lib/tenant.ts            # Tenant resolution via Host header
-        └── app/
-            ├── (frontend)/
-            │   ├── layout.tsx       # Injects template chrome (header/footer)
-            │   ├── page.tsx         # Homepage
-            │   └── blog/            # Blog list + detail (reads from Payload)
-            └── (payload)/           # Payload admin panel + API routes
-```
+- **Node.js 22+** — `brew install node@22`
+- **PostgreSQL** — `brew install postgresql@17 && brew services start postgresql@17`
 
-## Tech Stack
-
-| Technology | Purpose |
-|---|---|
-| **Next.js 15** | App Router frontend |
-| **Payload CMS 3** | Headless CMS (collections, auth, multi-tenant plugin) |
-| **Vercel Postgres** | Database |
-| **Vercel Blob** | Media storage |
-| **Lexical** | Rich text editor |
-
-## Quick Start
+## Get Started
 
 ```bash
-cd my-real-estate
-npm install
-npm run dev
+git clone git@github.com:AlaudaAI/CMS.git
+cd CMS/my-real-estate
+bash setup.sh        # installs deps, creates DB, seeds data
+npm run dev          # starts the server
 ```
 
-- **Frontend**: http://localhost:3000
-- **Payload Admin**: http://localhost:3000/admin
+Open http://localhost:3000 — that's it.
 
-## Environment Variables
+**Admin panel:** http://localhost:3000/admin
+**Login:** `admin@platform.com` / `changeme123`
 
-| Variable | Purpose |
+## What's Inside
+
+| URL | What |
 |---|---|
-| `PAYLOAD_SECRET` | Payload encryption secret |
-| `POSTGRES_URL` | Database connection string |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token (optional, for media uploads) |
+| `/` | Homepage (Luxe Realty — real estate template) |
+| `/blog` | Blog posts (tenant-isolated) |
+| `/admin` | Payload CMS admin panel |
 
-## Default Admin Account
+Two demo tenants are seeded: a real estate agency (port 3000) and a law firm (port 3001), each with their own template and blog posts.
 
-| Email | Password |
-|---|---|
-| `admin@platform.com` | `changeme123` |
+## Docs
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design
+- [TEMPLATE_GUIDE.md](./TEMPLATE_GUIDE.md) — How templates work
