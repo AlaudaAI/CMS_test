@@ -11,11 +11,11 @@ export default async function FrontendLayout({ children }: { children: React.Rea
     return (
       <html lang="en">
         <body className="frontend">
-          <main className="content">
+          <div className="content">
             <p style={{ padding: '4rem', textAlign: 'center' }}>
               No tenant configured. Visit <a href="/admin">/admin</a> to set up.
             </p>
-          </main>
+          </div>
         </body>
       </html>
     )
@@ -51,7 +51,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
       </head>
       <body className="frontend">
         <div dangerouslySetInnerHTML={{ __html: headerHtml }} />
-        <main className="content">{children}</main>
+        <div className="content">{children}</div>
         <div dangerouslySetInnerHTML={{ __html: footerHtml }} />
       </body>
     </html>

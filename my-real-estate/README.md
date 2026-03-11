@@ -5,13 +5,17 @@ A multi-tenant content management system built with [Payload CMS 3](https://payl
 ## Quick Start
 
 ```bash
+createdb my_cms
 cp .env.example .env
-# Fill in POSTGRES_URL and PAYLOAD_SECRET
+# Set POSTGRES_URL=postgres://localhost:5432/my_cms
+# Set PAYLOAD_SECRET=replace-this-with-a-random-secret
 
 npm install
 npm run seed     # creates admin user + sample data
 npm run dev      # http://localhost:3000/admin
 ```
+
+PostgreSQL must be installed and running before `npm run seed` or `npm run dev`.
 
 ## Default Credentials
 
@@ -25,7 +29,7 @@ npm run dev      # http://localhost:3000/admin
 
 | Variable | Description |
 |---|---|
-| `POSTGRES_URL` | Vercel Postgres connection string |
+| `POSTGRES_URL` | PostgreSQL connection string, for example `postgres://localhost:5432/my_cms` |
 | `PAYLOAD_SECRET` | Secret key for auth tokens and password hashing |
 | `NEXT_PUBLIC_SITE_URL` | Public URL of the deployment |
 

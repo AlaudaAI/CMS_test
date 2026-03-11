@@ -37,7 +37,7 @@ my_CMS_test/
 |---|---|
 | **Next.js 15** | App Router frontend |
 | **Payload CMS 3** | Headless CMS (collections, auth, multi-tenant plugin) |
-| **Vercel Postgres** | Database |
+| **PostgreSQL** | Database |
 | **Vercel Blob** | Media storage |
 | **Lexical** | Rich text editor |
 
@@ -45,10 +45,16 @@ my_CMS_test/
 
 ```bash
 cd my-real-estate
+createdb my_cms
+cp .env.example .env
+# Set POSTGRES_URL=postgres://localhost:5432/my_cms
+# Set PAYLOAD_SECRET=replace-this-with-a-random-secret
 npm install
+npm run seed
 npm run dev
 ```
 
+- PostgreSQL must be installed and running before you seed or start the app.
 - **Frontend**: http://localhost:3000
 - **Payload Admin**: http://localhost:3000/admin
 
@@ -57,7 +63,7 @@ npm run dev
 | Variable | Purpose |
 |---|---|
 | `PAYLOAD_SECRET` | Payload encryption secret |
-| `POSTGRES_URL` | Database connection string |
+| `POSTGRES_URL` | Database connection string, for example `postgres://localhost:5432/my_cms` |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token (optional, for media uploads) |
 
 ## Default Admin Account

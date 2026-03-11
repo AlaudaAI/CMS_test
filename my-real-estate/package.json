@@ -10,7 +10,7 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@payloadcms/db-vercel-postgres": "3.79.0",
+    "@payloadcms/db-postgres": "3.79.0",
     "@payloadcms/drizzle": "3.79.0",
     "@payloadcms/next": "3.79.0",
     "@payloadcms/plugin-multi-tenant": "3.79.0",
@@ -27,6 +27,7 @@
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "dotenv": "^17.2.3",
     "typescript": "^5.9.3"
   }
 }
