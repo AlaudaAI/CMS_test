@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.79.0",
+    "@payloadcms/db-sqlite": "^3.79.0",
     "@payloadcms/drizzle": "3.79.0",
     "@payloadcms/next": "3.79.0",
     "@payloadcms/plugin-multi-tenant": "3.79.0",

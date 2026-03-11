@@ -4,15 +4,16 @@ A multi-tenant CMS built with Payload CMS 3 + Next.js 15. Each tenant gets its o
 
 ## Requirements
 
-- **Node.js 22+** — `brew install node@22`
-- **PostgreSQL** — `brew install postgresql@17 && brew services start postgresql@17`
+- **Node.js 22+** — `brew install node@22` (macOS) or [nodejs.org](https://nodejs.org)
+
+That's it. SQLite is used by default — no database to install.
 
 ## Get Started
 
 ```bash
 git clone git@github.com:AlaudaAI/CMS.git
 cd CMS/my-real-estate
-bash setup.sh        # installs deps, creates DB, seeds data
+bash setup.sh        # installs deps, seeds data
 npm run dev          # starts the server
 ```
 
@@ -30,6 +31,14 @@ Open http://localhost:3000 — that's it.
 | `/admin` | Payload CMS admin panel |
 
 Two demo tenants are seeded: a real estate agency (port 3000) and a law firm (port 3001), each with their own template and blog posts.
+
+## Using PostgreSQL (optional)
+
+For production or if you prefer Postgres, set `POSTGRES_URL` in your `.env`:
+
+```
+POSTGRES_URL=postgres://localhost:5432/my_cms
+```
 
 ## Docs
 
