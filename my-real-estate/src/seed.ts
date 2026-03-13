@@ -11,7 +11,7 @@ function readFile(dir: string, name: string): string {
 
 const seed = async () => {
   const payload = await getPayload({ config })
-  await pushDevSchema(payload.db as any)
+  await pushDevSchema(payload.db as any, { acceptWarning: true })
 
   // 1. Create admin user
   try {
