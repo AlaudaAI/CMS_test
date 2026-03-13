@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import { getPayload } from 'payload'
-import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
 
 function readFile(dir: string, name: string): string {
@@ -9,20 +8,71 @@ function readFile(dir: string, name: string): string {
   catch { return '' }
 }
 
-const seed = async () => {
-  const payload = await getPayload({ config })
+/**
+ * Non-interactive pushSchema: calls drizzle-kit's pushSchema directly,
+ * auto-answers hanji column-rename prompts via keypress emits,
+ * and skips the prompts-library warning confirmation (just logs & applies).
+ */
+async function pushSchemaNoPrompt(adapter: any) {
+  const { pushSchema } = adapter.requireDrizzleKit()
 
-  // Auto-press Enter for drizzle-kit interactive prompts (column rename detection)
-  // This selects the default first option ("create column") instead of hanging
+  // Auto-press Enter for hanji interactive prompts (column rename detection).
+  // Selects the default first option ("create column") instead of hanging.
   const autoAnswer = setInterval(() => {
     process.stdin.emit('keypress', '\r', { name: 'return' })
   }, 200)
 
+  let apply: () => Promise<void>
+  let warnings: string[]
+  let hasDataLoss: boolean
+
   try {
-    await pushDevSchema(payload.db as any)
+    const result = await pushSchema(
+      adapter.schema,
+      adapter.drizzle,
+      adapter.schemaName ? [adapter.schemaName] : undefined,
+      adapter.tablesFilter,
+      adapter.extensions?.postgis ? ['postgis'] : undefined,
+    )
+    apply = result.apply
+    warnings = result.warnings
+    hasDataLoss = result.hasDataLoss
   } finally {
     clearInterval(autoAnswer)
   }
+
+  if (warnings.length) {
+    console.log(`Schema push warnings:\n${warnings.join('\n')}`)
+    if (hasDataLoss) console.log('DATA LOSS WARNING: possible data loss detected.')
+    console.log('Auto-accepting warnings and applying schema changes...')
+  }
+
+  await apply()
+
+  // Update payload_migrations bookkeeping
+  const migrationsTable = adapter.schemaName
+    ? `"${adapter.schemaName}"."payload_migrations"`
+    : '"payload_migrations"'
+  const devPush = await adapter.execute({
+    drizzle: adapter.drizzle,
+    raw: `SELECT * FROM ${migrationsTable} WHERE batch = '-1'`,
+  })
+  if (!devPush.rows.length) {
+    await adapter.drizzle.insert(adapter.tables.payload_migrations).values({
+      name: 'dev',
+      batch: -1,
+    })
+  } else {
+    await adapter.execute({
+      drizzle: adapter.drizzle,
+      raw: `UPDATE ${migrationsTable} SET updated_at = CURRENT_TIMESTAMP WHERE batch = '-1'`,
+    })
+  }
+}
+
+const seed = async () => {
+  const payload = await getPayload({ config })
+  await pushSchemaNoPrompt(payload.db)
 
   // 1. Create admin user
   try {
