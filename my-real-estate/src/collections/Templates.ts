@@ -1,8 +1,12 @@
 import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../access/roles'
 
 export const Templates: CollectionConfig = {
   slug: 'templates',
+  hooks: {
+    afterChange: [() => { revalidatePath('/', 'layout') }],
+  },
   admin: {
     useAsTitle: 'slug',
     group: 'Platform',

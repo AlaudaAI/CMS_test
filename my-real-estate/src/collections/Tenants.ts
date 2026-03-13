@@ -1,8 +1,12 @@
 import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../access/roles'
 
 export const Tenants: CollectionConfig = {
   slug: 'tenants',
+  hooks: {
+    afterChange: [() => { revalidatePath('/', 'layout') }],
+  },
   admin: {
     useAsTitle: 'siteName',
     group: 'Platform',
