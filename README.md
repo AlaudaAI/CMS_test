@@ -1,14 +1,31 @@
 # my_CMS_test
 
-Multi-theme CMS built with **Payload CMS 3** + **Next.js 15**.
-Two industry verticals (Real Estate, Legal) with swappable visual templates.
+Multi-tenant CMS built with **Payload CMS 3** + **Next.js 15**.
+Multiple industry verticals (Real Estate, Legal) with swappable visual templates, all managed through the CMS.
+
+## Architecture
+
+```
+Template files (disk)  ──→  npm run seed  ──→  Templates collection (DB)
+                                          ──→  Tenants collection (DB)
+                                                        │
+Host header  ──→  tenant.ts  ──→  find Tenant  ──→  find linked Template
+                                                        │
+                                          layout.tsx assembles chrome HTML/CSS + page content
+```
+
+**Templates** provide the visual shell (header, footer, nav, colors, fonts).
+**Tenants** provide site configuration (name, hero, features, nav links).
+**Collections** (Posts, Services, Staff) provide page content.
+
+All three are decoupled and composed at runtime in `layout.tsx`.
 
 ## Project Structure
 
 ```
 my_CMS_test/
-├── template/                        # Visual templates (pure HTML/CSS, no JS)
-│   ├── TEMPLATE_STANDARD.md         #   Template authoring spec
+├── template/                        # Visual templates (pure HTML/CSS)
+│   ├── _reference/                  #   Reference template (starting point)
 │   ├── real-estate/
 │   │   ├── real-estate-1/           #   Brutalist grid layout
 │   │   └── real-estate-2/           #   Editorial / magazine layout
@@ -16,17 +33,19 @@ my_CMS_test/
 │       ├── legal-1/                 #   Sidebar navigation layout
 │       └── legal-2/                 #   Classic top-nav layout
 │
+├── TEMPLATE_GUIDE.md                # Template spec + authoring guide
+│
 └── my-real-estate/                  # Next.js + Payload app
     └── src/
         ├── payload.config.ts        # Payload config (collections, DB, editor)
-        ├── collections/             # Posts, Media, Services, Staff, Users
-        ├── themes/                  # Theme content configs (copy, nav links, hero)
-        ├── templates/loader.ts      # Reads template files from template/ at build time
+        ├── collections/             # Posts, Media, Services, Staff, Users, Templates, Tenants
+        ├── lib/tenant.ts            # Resolves tenant by Host header
+        ├── templates/loader.ts      # Loads template from Payload DB
         ├── components/              # Dashboard UI components
         └── app/
             ├── (frontend)/
             │   ├── layout.tsx       # Injects template chrome (header/footer)
-            │   ├── page.tsx         # Homepage (static from theme config)
+            │   ├── page.tsx         # Homepage (hero + features from Tenant)
             │   ├── blog/            # Blog list + detail (reads from Payload)
             │   └── dashboard/       # Custom admin dashboard
             └── (payload)/           # Payload admin panel + API routes
@@ -47,29 +66,23 @@ my_CMS_test/
 ```bash
 cd my-real-estate
 npm install
-
-# Pick a theme + template
-NEXT_PUBLIC_SITE_THEME=realestate NEXT_PUBLIC_SITE_TEMPLATE=real-estate/real-estate-1 npm run dev
-# or
-NEXT_PUBLIC_SITE_THEME=lawfirm NEXT_PUBLIC_SITE_TEMPLATE=legal/legal-2 npm run dev
+npm run seed    # imports templates into DB, creates tenants and sample posts
+npm run dev
 ```
 
 - **Frontend**: http://localhost:3000
-- **Dashboard**: http://localhost:3000/dashboard
 - **Payload Admin**: http://localhost:3000/admin
+- **Dashboard**: http://localhost:3000/dashboard
 
 ## Environment Variables
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_THEME` | Content theme (`realestate` / `lawfirm`) | `realestate` |
-| `NEXT_PUBLIC_SITE_TEMPLATE` | Visual template (`real-estate/real-estate-1`, etc.) | `real-estate/real-estate-1` |
 | `PAYLOAD_SECRET` | Payload encryption secret | — |
 | `POSTGRES_URL` | Database connection string | — |
 
-## Default Accounts
+## Default Account
 
-| Theme | Email | Password |
+| Email | Password | Role |
 |---|---|---|
-| Real Estate | `admin@luxerealty.com` | `changeme123` |
-| Law Firm | `admin@sterlinglaw.com` | `changeme123` |
+| `admin@platform.com` | `changeme123` | admin |
