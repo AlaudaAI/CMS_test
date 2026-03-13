@@ -44,7 +44,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.POSTGRES_URL,
     },
-    push: { acceptWarnings: true },
+    push: false,
   }),
   sharp,
 })
