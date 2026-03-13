@@ -1,6 +1,7 @@
 import path from 'path'
 import { buildConfig } from 'payload'
 import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
@@ -28,6 +29,12 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Posts, Services, Staff, Templates, Tenants],
+  plugins: [
+    vercelBlobStorage({
+      collections: { media: true },
+      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+    }),
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'default-secret',
   typescript: {
