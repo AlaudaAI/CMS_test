@@ -1,25 +1,132 @@
+import fs from 'fs'
+import path from 'path'
 import { getPayload } from 'payload'
 import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
 
+function readFile(dir: string, name: string): string {
+  try { return fs.readFileSync(path.join(dir, name), 'utf-8') }
+  catch { return '' }
+}
+
 const seed = async () => {
   const payload = await getPayload({ config })
-
-  // Push schema to database (creates tables if they don't exist)
   await pushDevSchema(payload.db as any)
 
-  // Create admin user
+  // 1. Create admin user
   try {
     await payload.create({
       collection: 'users',
-      data: { email: 'admin@luxerealty.com', password: 'changeme123', role: 'admin' },
+      data: { email: 'admin@platform.com', password: 'changeme123', role: 'admin' },
     })
-    console.log('✓ Admin user created: admin@luxerealty.com / changeme123')
+    console.log('✓ Admin user created: admin@platform.com / changeme123')
   } catch {
     console.log('→ Admin user already exists')
   }
 
-  // Create blog posts with HTML content
+  // 2. Import templates from disk
+  const templateDir = path.join(process.cwd(), 'template')
+  const categories = ['real-estate', 'legal']
+  const templateRecords: Record<string, { id: number | string }> = {}
+
+  for (const category of categories) {
+    const catDir = path.join(templateDir, category)
+    if (!fs.existsSync(catDir)) continue
+
+    const slugs = fs.readdirSync(catDir).filter((f) =>
+      fs.statSync(path.join(catDir, f)).isDirectory()
+    )
+
+    for (const slug of slugs) {
+      const dir = path.join(catDir, slug)
+      try {
+        const doc = await payload.create({
+          collection: 'templates',
+          data: {
+            slug,
+            category,
+            tokensCss: readFile(dir, 'tokens.css'),
+            chromeCss: readFile(dir, 'chrome.css'),
+            chromeHtml: readFile(dir, 'chrome.html'),
+            configJson: readFile(dir, 'config.json') || '{}',
+          },
+        })
+        templateRecords[slug] = doc
+        console.log(`✓ Imported template: ${slug}`)
+      } catch {
+        const existing = await payload.find({
+          collection: 'templates',
+          where: { slug: { equals: slug } },
+          limit: 1,
+        })
+        if (existing.docs[0]) templateRecords[slug] = existing.docs[0]
+        console.log(`→ Template already exists: ${slug}`)
+      }
+    }
+  }
+
+  // 3. Create tenants
+  const tenants = [
+    {
+      domain: 'localhost:3000',
+      template: templateRecords['real-estate-1']?.id,
+      siteName: 'Luxe Realty',
+      tagline: 'Premium Real Estate',
+      meta: { title: 'Luxe Realty — Premium Real Estate', description: 'Find your dream property with Luxe Realty' },
+      hero: {
+        heading: 'Find Your Perfect Home',
+        sub: 'Premium properties curated for discerning buyers. Let us guide you to your next chapter.',
+        cta: 'Read Our Insights',
+      },
+      features: [
+        { title: 'Curated Listings', desc: 'Hand-selected properties that meet the highest standards of quality and value.' },
+        { title: 'Market Insights', desc: 'Stay informed with expert analysis and trends from our seasoned real estate team.' },
+        { title: 'Concierge Service', desc: 'White-glove support from first viewing to closing day and beyond.' },
+      ],
+      navLinks: [
+        { href: '/', label: 'Home' },
+        { href: '/blog', label: 'Blog' },
+      ],
+      blog: { heading: 'Blog', sub: 'Insights, tips, and market updates from our team' },
+    },
+    {
+      domain: 'localhost:3001',
+      template: templateRecords['legal-1']?.id,
+      siteName: 'Sterling & Associates',
+      tagline: 'Attorneys at Law',
+      meta: { title: 'Sterling & Associates — Attorneys at Law', description: 'Experienced legal counsel you can trust.' },
+      hero: {
+        heading: 'Trusted Legal Counsel',
+        sub: 'Decades of experience protecting your rights. We fight for the outcomes you deserve.',
+        cta: 'Read Our Articles',
+      },
+      features: [
+        { title: 'Corporate Law', desc: 'Mergers, acquisitions, and compliance — strategic advice for businesses of every size.' },
+        { title: 'Litigation', desc: 'Aggressive courtroom representation backed by meticulous preparation and research.' },
+        { title: 'Estate Planning', desc: 'Protect your legacy with wills, trusts, and comprehensive succession strategies.' },
+      ],
+      navLinks: [
+        { href: '/', label: 'Home' },
+        { href: '/blog', label: 'Insights' },
+      ],
+      blog: { heading: 'Legal Insights', sub: 'Articles and analysis from our attorneys' },
+    },
+  ]
+
+  for (const t of tenants) {
+    if (!t.template) {
+      console.log(`⚠ Skipping tenant "${t.siteName}" — template not found`)
+      continue
+    }
+    try {
+      await payload.create({ collection: 'tenants', data: t as any })
+      console.log(`✓ Created tenant: ${t.siteName} (${t.domain})`)
+    } catch {
+      console.log(`→ Tenant already exists: ${t.siteName}`)
+    }
+  }
+
+  // 4. Seed blog posts
   const posts = [
     {
       title: '5 Tips for First-Time Home Buyers in 2026',
@@ -56,7 +163,7 @@ const seed = async () => {
     }
   }
 
-  console.log('\nDone! Visit http://localhost:3000/dashboard to log in.')
+  console.log('\nDone! Run `npm run dev` and visit http://localhost:3000')
   process.exit(0)
 }
 

@@ -1,26 +1,46 @@
-import type { Metadata } from 'next'
 import React from 'react'
 import './globals.css'
-import { theme } from '../../themes'
-import { template } from '../../templates/loader'
+import { getCurrentTenant } from '../../lib/tenant'
+import { loadTemplate } from '../../templates/loader'
 
-export const metadata: Metadata = {
-  title: theme.meta.title,
-  description: theme.meta.description,
-}
+export const dynamic = 'force-dynamic'
 
-export default function FrontendLayout({ children }: { children: React.ReactNode }) {
-  const navHtml = theme.navLinks.map(l => `<a href="${l.href}">${l.label}</a>`).join('\n')
+export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
+  const tenant = await getCurrentTenant()
+
+  if (!tenant) {
+    return (
+      <html lang="en">
+        <body>
+          <p>No tenant configured. Run <code>npm run seed</code> to set up.</p>
+        </body>
+      </html>
+    )
+  }
+
+  const templateId = typeof tenant.template === 'object' ? tenant.template.id : tenant.template
+  const template = await loadTemplate(templateId)
+
+  const navHtml = (tenant.navLinks || [])
+    .map((l: { label: string; href: string }) => `<a href="${l.href}">${l.label}</a>`)
+    .join('\n')
+
   const processed = template.chromeHtml
-    .replaceAll('{{title}}', theme.name)
+    .replaceAll('{{title}}', tenant.siteName)
     .replaceAll('{{nav}}', navHtml)
+
   const parts = processed.split('{{content}}')
   const headerHtml = parts[0] ?? ''
   const footerHtml = parts[1] ?? ''
 
+  const metaTitle = tenant.meta?.title || tenant.siteName
+  const metaDesc = tenant.meta?.description || ''
+
   return (
     <html lang="en">
       <head>
+        <title>{metaTitle}</title>
+        {metaDesc && <meta name="description" content={metaDesc} />}
         {template.config.fonts?.map((f) => (
           <link key={f} rel="stylesheet" href={f} />
         ))}

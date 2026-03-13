@@ -10,6 +10,8 @@ import { Media } from './collections/Media'
 import { Users } from './collections/Users'
 import { Services } from './collections/Services'
 import { Staff } from './collections/Staff'
+import { Templates } from './collections/Templates'
+import { Tenants } from './collections/Tenants'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -25,7 +27,7 @@ export default buildConfig({
       description: 'Content management for Luxe Realty blog and media.',
     },
   },
-  collections: [Users, Media, Posts, Services, Staff],
+  collections: [Users, Media, Posts, Services, Staff, Templates, Tenants],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'default-secret',
   typescript: {
