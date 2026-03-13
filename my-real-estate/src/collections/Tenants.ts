@@ -1,11 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../access/roles'
 
 export const Tenants: CollectionConfig = {
   slug: 'tenants',
+  hooks: {
+    afterChange: [() => { revalidatePath('/', 'layout') }],
+  },
   admin: {
     useAsTitle: 'siteName',
-    defaultColumns: ['siteName', 'domain', 'industry', 'updatedAt'],
     group: 'Platform',
   },
   access: {
@@ -19,8 +22,14 @@ export const Tenants: CollectionConfig = {
     { name: 'template', type: 'relationship', relationTo: 'templates', required: true },
     { name: 'siteName', type: 'text', required: true },
     { name: 'tagline', type: 'text' },
-    { name: 'metaTitle', type: 'text' },
-    { name: 'metaDescription', type: 'textarea' },
+    {
+      name: 'meta',
+      type: 'group',
+      fields: [
+        { name: 'title', type: 'text' },
+        { name: 'description', type: 'textarea' },
+      ],
+    },
     {
       name: 'hero',
       type: 'group',
@@ -33,10 +42,9 @@ export const Tenants: CollectionConfig = {
     {
       name: 'features',
       type: 'array',
-      maxRows: 6,
       fields: [
         { name: 'title', type: 'text', required: true },
-        { name: 'desc', type: 'textarea', required: true },
+        { name: 'desc', type: 'text', required: true },
       ],
     },
     {
@@ -47,18 +55,14 @@ export const Tenants: CollectionConfig = {
         { name: 'href', type: 'text', required: true },
       ],
     },
-    { name: 'footerText', type: 'text' },
     {
-      name: 'industry',
-      type: 'select',
-      options: [
-        { label: 'Real Estate', value: 'real-estate' },
-        { label: 'Legal', value: 'legal' },
-        { label: 'Restaurant', value: 'restaurant' },
-        { label: 'Healthcare', value: 'healthcare' },
-        { label: 'Other', value: 'other' },
+      name: 'blog',
+      type: 'group',
+      fields: [
+        { name: 'heading', type: 'text', defaultValue: 'Blog' },
+        { name: 'sub', type: 'text' },
       ],
-      admin: { position: 'sidebar' },
     },
+    { name: 'footerText', type: 'text' },
   ],
 }

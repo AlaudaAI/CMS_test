@@ -1,20 +1,21 @@
+import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
-import config from '../payload.config'
 
-export interface TemplateData {
-  config: { fonts?: string[]; externals?: string[] }
+export type TemplateData = {
   tokens: string
   chromeCss: string
   chromeHtml: string
+  config: { fonts?: string[]; externals?: string[] }
 }
 
-export async function loadTemplate(templateId: string | number): Promise<TemplateData> {
-  const payload = await getPayload({ config })
-  const template = await payload.findByID({ collection: 'templates', id: templateId })
+export async function loadTemplate(templateId: number | string): Promise<TemplateData> {
+  const payload = await getPayload({ config: configPromise })
+  const doc = await payload.findByID({ collection: 'templates', id: templateId })
+
   return {
-    config: (template.configJson as { fonts?: string[]; externals?: string[] }) || {},
-    tokens: template.tokensCss || '',
-    chromeCss: template.chromeCss || '',
-    chromeHtml: template.chromeHtml || '',
+    tokens: doc.tokensCss,
+    chromeCss: doc.chromeCss,
+    chromeHtml: doc.chromeHtml,
+    config: JSON.parse(doc.configJson || '{}'),
   }
 }

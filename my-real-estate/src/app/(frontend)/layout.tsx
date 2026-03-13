@@ -7,15 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const tenant = await getCurrentTenant()
+
   if (!tenant) {
     return (
       <html lang="en">
-        <body className="frontend">
-          <div className="content">
-            <p style={{ padding: '4rem', textAlign: 'center' }}>
-              No tenant configured. Visit <a href="/admin">/admin</a> to set up.
-            </p>
-          </div>
+        <body>
+          <p>No tenant configured. Run <code>npm run seed</code> to set up.</p>
         </body>
       </html>
     )
@@ -25,21 +22,25 @@ export default async function FrontendLayout({ children }: { children: React.Rea
   const template = await loadTemplate(templateId)
 
   const navHtml = (tenant.navLinks || [])
-    .map((l: any) => `<a href="${l.href}">${l.label}</a>`)
+    .map((l: { label: string; href: string }) => `<a href="${l.href}">${l.label}</a>`)
     .join('\n')
 
   const processed = template.chromeHtml
-    .replaceAll('{{title}}', tenant.siteName || tenant.name)
+    .replaceAll('{{title}}', tenant.siteName)
     .replaceAll('{{nav}}', navHtml)
+
   const parts = processed.split('{{content}}')
   const headerHtml = parts[0] ?? ''
   const footerHtml = parts[1] ?? ''
 
+  const metaTitle = tenant.meta?.title || tenant.siteName
+  const metaDesc = tenant.meta?.description || ''
+
   return (
     <html lang="en">
       <head>
-        <title>{tenant.metaTitle || tenant.siteName || tenant.name}</title>
-        <meta name="description" content={tenant.metaDescription || ''} />
+        <title>{metaTitle}</title>
+        {metaDesc && <meta name="description" content={metaDesc} />}
         {template.config.fonts?.map((f) => (
           <link key={f} rel="stylesheet" href={f} />
         ))}
@@ -49,9 +50,9 @@ export default async function FrontendLayout({ children }: { children: React.Rea
         <style dangerouslySetInnerHTML={{ __html: template.tokens || '' }} />
         <style dangerouslySetInnerHTML={{ __html: template.chromeCss || '' }} />
       </head>
-      <body className="frontend">
+      <body>
         <div dangerouslySetInnerHTML={{ __html: headerHtml }} />
-        <div className="content">{children}</div>
+        <main className="content">{children}</main>
         <div dangerouslySetInnerHTML={{ __html: footerHtml }} />
       </body>
     </html>

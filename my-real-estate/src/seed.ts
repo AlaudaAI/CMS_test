@@ -1,20 +1,80 @@
-import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { getPayload } from 'payload'
-import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
 
-function readTemplateFile(dir: string, name: string): string {
+function readFile(dir: string, name: string): string {
   try { return fs.readFileSync(path.join(dir, name), 'utf-8') }
   catch { return '' }
 }
 
+/**
+ * Non-interactive pushSchema: calls drizzle-kit's pushSchema directly,
+ * auto-answers hanji column-rename prompts via keypress emits,
+ * and skips the prompts-library warning confirmation (just logs & applies).
+ */
+async function pushSchemaNoPrompt(adapter: any) {
+  const { pushSchema } = adapter.requireDrizzleKit()
+
+  // Auto-press Enter for hanji interactive prompts (column rename detection).
+  // Selects the default first option ("create column") instead of hanging.
+  const autoAnswer = setInterval(() => {
+    process.stdin.emit('keypress', '\r', { name: 'return' })
+  }, 200)
+
+  let apply: () => Promise<void>
+  let warnings: string[]
+  let hasDataLoss: boolean
+
+  try {
+    const result = await pushSchema(
+      adapter.schema,
+      adapter.drizzle,
+      adapter.schemaName ? [adapter.schemaName] : undefined,
+      adapter.tablesFilter,
+      adapter.extensions?.postgis ? ['postgis'] : undefined,
+    )
+    apply = result.apply
+    warnings = result.warnings
+    hasDataLoss = result.hasDataLoss
+  } finally {
+    clearInterval(autoAnswer)
+  }
+
+  if (warnings.length) {
+    console.log(`Schema push warnings:\n${warnings.join('\n')}`)
+    if (hasDataLoss) console.log('DATA LOSS WARNING: possible data loss detected.')
+    console.log('Auto-accepting warnings and applying schema changes...')
+  }
+
+  await apply()
+
+  // Update payload_migrations bookkeeping
+  const migrationsTable = adapter.schemaName
+    ? `"${adapter.schemaName}"."payload_migrations"`
+    : '"payload_migrations"'
+  const devPush = await adapter.execute({
+    drizzle: adapter.drizzle,
+    raw: `SELECT * FROM ${migrationsTable} WHERE batch = '-1'`,
+  })
+  if (!devPush.rows.length) {
+    await adapter.drizzle.insert(adapter.tables.payload_migrations).values({
+      name: 'dev',
+      batch: -1,
+    })
+  } else {
+    await adapter.execute({
+      drizzle: adapter.drizzle,
+      raw: `UPDATE ${migrationsTable} SET updated_at = CURRENT_TIMESTAMP WHERE batch = '-1'`,
+    })
+  }
+}
+
 const seed = async () => {
   const payload = await getPayload({ config })
-  await pushDevSchema(payload.db as any)
+  await pushSchemaNoPrompt(payload.db)
 
-  // 1. Create platform admin
+  // 1. Create admin user
   try {
     await payload.create({
       collection: 'users',
@@ -25,46 +85,42 @@ const seed = async () => {
     console.log('→ Admin user already exists')
   }
 
-  // 2. Seed templates from /template/ directory
-  const templateRoot = path.join(process.cwd(), '..', 'template')
+  // 2. Import templates from disk
+  const templateDir = path.join(process.cwd(), 'template')
   const categories = ['real-estate', 'legal']
-  const templateRecords: Record<string, any> = {}
+  const templateRecords: Record<string, { id: number | string }> = {}
 
   for (const category of categories) {
-    const categoryDir = path.join(templateRoot, category)
-    if (!fs.existsSync(categoryDir)) continue
+    const catDir = path.join(templateDir, category)
+    if (!fs.existsSync(catDir)) continue
 
-    const entries = fs.readdirSync(categoryDir, { withFileTypes: true })
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue
+    const slugs = fs.readdirSync(catDir).filter((f) =>
+      fs.statSync(path.join(catDir, f)).isDirectory()
+    )
 
-      const slug = entry.name
-      const dir = path.join(categoryDir, slug)
-      const configJson = JSON.parse(readTemplateFile(dir, 'config.json') || '{}')
-
+    for (const slug of slugs) {
+      const dir = path.join(catDir, slug)
       try {
         const doc = await payload.create({
           collection: 'templates',
           data: {
-            name: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
             slug,
             category,
-            tokensCss: readTemplateFile(dir, 'tokens.css'),
-            chromeCss: readTemplateFile(dir, 'chrome.css'),
-            chromeHtml: readTemplateFile(dir, 'chrome.html'),
-            configJson,
+            tokensCss: readFile(dir, 'tokens.css'),
+            chromeCss: readFile(dir, 'chrome.css'),
+            chromeHtml: readFile(dir, 'chrome.html'),
+            configJson: readFile(dir, 'config.json') || '{}',
           },
         })
         templateRecords[slug] = doc
-        console.log(`✓ Created template: ${slug}`)
+        console.log(`✓ Imported template: ${slug}`)
       } catch {
-        // Already exists — find it
-        const result = await payload.find({
+        const existing = await payload.find({
           collection: 'templates',
           where: { slug: { equals: slug } },
           limit: 1,
         })
-        if (result.docs[0]) templateRecords[slug] = result.docs[0]
+        if (existing.docs[0]) templateRecords[slug] = existing.docs[0]
         console.log(`→ Template already exists: ${slug}`)
       }
     }
@@ -73,139 +129,102 @@ const seed = async () => {
   // 3. Create tenants
   const tenants = [
     {
-      name: 'Luxe Realty',
       domain: 'localhost:3000',
       template: templateRecords['real-estate-1']?.id,
       siteName: 'Luxe Realty',
       tagline: 'Premium Real Estate',
-      metaTitle: 'Luxe Realty — Premium Real Estate',
-      metaDescription: 'Find your dream property with Luxe Realty',
-      industry: 'real-estate',
+      meta: { title: 'Luxe Realty — Premium Real Estate', description: 'Find your dream property with Luxe Realty' },
       hero: {
         heading: 'Find Your Perfect Home',
-        sub: 'Premium properties curated for discerning buyers.',
+        sub: 'Premium properties curated for discerning buyers. Let us guide you to your next chapter.',
         cta: 'Read Our Insights',
       },
       features: [
-        { title: 'Curated Listings', desc: 'Hand-selected properties that meet the highest standards.' },
-        { title: 'Market Insights', desc: 'Expert analysis and trends from our real estate team.' },
-        { title: 'Concierge Service', desc: 'White-glove support from first viewing to closing day.' },
+        { title: 'Curated Listings', desc: 'Hand-selected properties that meet the highest standards of quality and value.' },
+        { title: 'Market Insights', desc: 'Stay informed with expert analysis and trends from our seasoned real estate team.' },
+        { title: 'Concierge Service', desc: 'White-glove support from first viewing to closing day and beyond.' },
       ],
       navLinks: [
-        { label: 'Home', href: '/' },
-        { label: 'Blog', href: '/blog' },
+        { href: '/', label: 'Home' },
+        { href: '/blog', label: 'Blog' },
       ],
-      footerText: '© 2026 Luxe Realty. All rights reserved.',
+      blog: { heading: 'Blog', sub: 'Insights, tips, and market updates from our team' },
     },
     {
-      name: 'Sterling & Associates',
       domain: 'localhost:3001',
       template: templateRecords['legal-1']?.id,
       siteName: 'Sterling & Associates',
       tagline: 'Attorneys at Law',
-      metaTitle: 'Sterling & Associates — Attorneys at Law',
-      metaDescription: 'Experienced legal counsel you can trust.',
-      industry: 'legal',
+      meta: { title: 'Sterling & Associates — Attorneys at Law', description: 'Experienced legal counsel you can trust.' },
       hero: {
         heading: 'Trusted Legal Counsel',
-        sub: 'Decades of experience protecting your rights.',
+        sub: 'Decades of experience protecting your rights. We fight for the outcomes you deserve.',
         cta: 'Read Our Articles',
       },
       features: [
-        { title: 'Corporate Law', desc: 'Strategic advice for businesses of every size.' },
-        { title: 'Litigation', desc: 'Aggressive courtroom representation backed by research.' },
-        { title: 'Estate Planning', desc: 'Protect your legacy with comprehensive strategies.' },
+        { title: 'Corporate Law', desc: 'Mergers, acquisitions, and compliance — strategic advice for businesses of every size.' },
+        { title: 'Litigation', desc: 'Aggressive courtroom representation backed by meticulous preparation and research.' },
+        { title: 'Estate Planning', desc: 'Protect your legacy with wills, trusts, and comprehensive succession strategies.' },
       ],
       navLinks: [
-        { label: 'Home', href: '/' },
-        { label: 'Insights', href: '/blog' },
+        { href: '/', label: 'Home' },
+        { href: '/blog', label: 'Insights' },
       ],
-      footerText: '© 2026 Sterling & Associates LLP. All rights reserved.',
+      blog: { heading: 'Legal Insights', sub: 'Articles and analysis from our attorneys' },
     },
   ]
 
-  const tenantRecords: Record<string, any> = {}
   for (const t of tenants) {
     if (!t.template) {
-      console.log(`⚠ Skipping tenant ${t.name}: no template found`)
+      console.log(`⚠ Skipping tenant "${t.siteName}" — template not found`)
       continue
     }
     try {
-      const doc = await payload.create({ collection: 'tenants', data: t as any })
-      tenantRecords[t.name] = doc
-      console.log(`✓ Created tenant: ${t.name}`)
+      await payload.create({ collection: 'tenants', data: t as any })
+      console.log(`✓ Created tenant: ${t.siteName} (${t.domain})`)
     } catch {
-      const result = await payload.find({
-        collection: 'tenants',
-        where: { domain: { equals: t.domain } },
-        limit: 1,
-      })
-      if (result.docs[0]) tenantRecords[t.name] = result.docs[0]
-      console.log(`→ Tenant already exists: ${t.name}`)
+      console.log(`→ Tenant already exists: ${t.siteName}`)
     }
   }
 
-  // 4. Create sample posts per tenant
-  const realEstatePosts = [
+  // 4. Seed blog posts
+  const posts = [
     {
-      title: '5 Tips for First-Time Home Buyers',
-      slug: 'first-time-buyer-tips',
-      excerpt: 'Essential tips for navigating the real estate market as a new buyer.',
-      status: 'published',
+      title: '5 Tips for First-Time Home Buyers in 2026',
+      slug: 'first-time-buyer-tips-2026',
+      excerpt: 'Navigate the real estate market with confidence using these essential tips for new buyers.',
+      status: 'published' as const,
       publishedAt: '2026-02-15',
-      contentHtml: '<p>Buying your first home is one of the most exciting milestones in life.</p><h2>1. Get Pre-Approved</h2><p>Get a mortgage pre-approval before browsing listings.</p><h2>2. Research the Neighborhood</h2><p>Consider commute times, schools, and local amenities.</p><h2>3. Do Not Skip the Inspection</h2><p>A professional inspection can reveal hidden issues.</p>',
+      contentHtml: '<p>Buying your first home is one of the most exciting milestones in life. Here are five tips to help you navigate the process with confidence.</p><h2>1. Get Pre-Approved First</h2><p>Before you start browsing listings, get a mortgage pre-approval. This tells sellers you are a serious buyer and helps you understand your budget.</p><h2>2. Research the Neighborhood</h2><p>Look beyond the property itself. Consider commute times, school districts, local amenities, and future development plans in the area.</p><h2>3. Do Not Skip the Inspection</h2><p>A professional home inspection can reveal hidden issues that could cost thousands to repair. Always make your offer contingent on a satisfactory inspection.</p><h2>4. Think Long-Term</h2><p>Consider how your needs might change over the next 5-10 years. A home that works for you now should also accommodate future plans.</p><h2>5. Work with an Experienced Agent</h2><p>A knowledgeable real estate agent can negotiate on your behalf, identify potential issues, and guide you through the entire closing process.</p>',
     },
     {
-      title: 'Market Trends to Watch This Spring',
-      slug: 'market-trends-spring',
-      excerpt: 'Interest rates, inventory levels, and what is shaping the market.',
-      status: 'published',
+      title: 'Real Estate Market Trends to Watch This Spring',
+      slug: 'market-trends-spring-2026',
+      excerpt: 'Interest rates, inventory levels, and emerging neighborhoods — here is what is shaping the market.',
+      status: 'published' as const,
       publishedAt: '2026-03-01',
-      contentHtml: '<p>Spring is traditionally the busiest season for real estate.</p><h2>Interest Rates Stabilizing</h2><p>Mortgage rates have begun to stabilize, bringing more buyers back.</p><h2>Inventory Is Growing</h2><p>New construction is increasing, giving buyers more choices.</p>',
-    },
-  ]
-
-  const legalPosts = [
-    {
-      title: 'What to Do After a Car Accident',
-      slug: 'car-accident-guide',
-      excerpt: 'Key steps to protect your rights after a motor vehicle accident.',
-      status: 'published',
-      publishedAt: '2026-02-10',
-      contentHtml: '<p>A car accident can be overwhelming. Knowing the right steps matters.</p><h2>Document Everything</h2><p>Take photographs and collect contact information.</p><h2>Seek Medical Attention</h2><p>See a doctor within 24 hours even if you feel fine.</p>',
+      contentHtml: '<p>Spring is traditionally the busiest season for real estate. Here is what we are seeing in the market this year.</p><h2>Interest Rates Stabilizing</h2><p>After years of volatility, mortgage rates have begun to stabilize in the mid-5% range, bringing more buyers back to the market.</p><h2>Inventory Is Growing</h2><p>New construction and returning sellers are increasing inventory levels, giving buyers more choices and reducing bidding wars.</p><h2>Suburban Demand Remains Strong</h2><p>Remote and hybrid work continues to drive demand for suburban homes with dedicated office spaces and larger outdoor areas.</p>',
     },
     {
-      title: 'LLC vs. Corporation: Choosing the Right Structure',
-      slug: 'llc-vs-corporation',
-      excerpt: 'Choosing the right business structure is a critical decision for founders.',
-      status: 'published',
-      publishedAt: '2026-02-25',
-      contentHtml: '<p>The legal structure you choose affects liability, taxes, and fundraising.</p><h2>LLC</h2><p>Flexible management and pass-through taxation. Ideal for small businesses.</p><h2>Corporation</h2><p>Better for raising venture capital but faces double taxation.</p>',
+      title: 'How to Stage Your Home for a Quick Sale',
+      slug: 'home-staging-guide',
+      excerpt: 'Simple staging techniques that help your property stand out and sell faster.',
+      status: 'published' as const,
+      publishedAt: '2026-02-20',
+      contentHtml: '<p>Professional staging can help your home sell faster and for a higher price. Here are proven techniques you can implement yourself.</p><h2>Declutter and Depersonalize</h2><p>Remove personal photos, excess furniture, and clutter. Buyers need to envision themselves in the space, not see your life story.</p><h2>Focus on Curb Appeal</h2><p>First impressions matter. Fresh paint on the front door, well-maintained landscaping, and clean walkways set the tone for the entire showing.</p><h2>Let in Natural Light</h2><p>Open all curtains, clean windows, and add mirrors to reflect light. Bright spaces feel larger and more inviting.</p>',
     },
   ]
 
-  const postSets = [
-    { tenantName: 'Luxe Realty', posts: realEstatePosts },
-    { tenantName: 'Sterling & Associates', posts: legalPosts },
-  ]
-
-  for (const { tenantName, posts } of postSets) {
-    const tenant = tenantRecords[tenantName]
-    if (!tenant) continue
-    for (const post of posts) {
-      try {
-        await payload.create({
-          collection: 'posts',
-          data: { ...post, tenant: tenant.id } as any,
-        })
-        console.log(`✓ Created post: ${post.title} (${tenantName})`)
-      } catch {
-        console.log(`→ Post already exists: ${post.title}`)
-      }
+  for (const post of posts) {
+    try {
+      await payload.create({ collection: 'posts', data: post as any })
+      console.log(`✓ Created post: ${post.title}`)
+    } catch {
+      console.log(`→ Post already exists: ${post.title}`)
     }
   }
 
-  console.log('\nDone! Visit http://localhost:3000/admin to manage content.')
+  console.log('\nDone! Run `npm run dev` and visit http://localhost:3000')
   process.exit(0)
 }
 

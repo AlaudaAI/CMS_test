@@ -1,55 +1,88 @@
-# Multi-Tenant CMS
+# my_CMS_test
 
-A multi-tenant CMS built with Payload CMS 3 + Next.js 15. Each tenant gets its own website with custom templates — managed from one admin panel.
+Multi-tenant CMS built with **Payload CMS 3** + **Next.js 15**.
+Multiple industry verticals (Real Estate, Legal) with swappable visual templates, all managed through the CMS.
 
-## Requirements
+## Architecture
 
-- **Node.js 22+** — `brew install node@22` (macOS) or [nodejs.org](https://nodejs.org)
+```
+Template files (disk)  ──→  npm run seed  ──→  Templates collection (DB)
+                                          ──→  Tenants collection (DB)
+                                                        │
+Host header  ──→  tenant.ts  ──→  find Tenant  ──→  find linked Template
+                                                        │
+                                          layout.tsx assembles chrome HTML/CSS + page content
+```
 
-That's it. SQLite is used by default — no database to install.
+**Templates** provide the visual shell (header, footer, nav, colors, fonts).
+**Tenants** provide site configuration (name, hero, features, nav links).
+**Collections** (Posts, Services, Staff) provide page content.
 
-## Get Started
+All three are decoupled and composed at runtime in `layout.tsx`.
+
+## Project Structure
+
+```
+my_CMS_test/
+├── template/                        # Visual templates (pure HTML/CSS)
+│   ├── _reference/                  #   Reference template (starting point)
+│   ├── real-estate/
+│   │   ├── real-estate-1/           #   Brutalist grid layout
+│   │   └── real-estate-2/           #   Editorial / magazine layout
+│   └── legal/
+│       ├── legal-1/                 #   Sidebar navigation layout
+│       └── legal-2/                 #   Classic top-nav layout
+│
+├── TEMPLATE_GUIDE.md                # Template spec + authoring guide
+│
+└── my-real-estate/                  # Next.js + Payload app
+    └── src/
+        ├── payload.config.ts        # Payload config (collections, DB, editor)
+        ├── collections/             # Posts, Media, Services, Staff, Users, Templates, Tenants
+        ├── lib/tenant.ts            # Resolves tenant by Host header
+        ├── templates/loader.ts      # Loads template from Payload DB
+        ├── components/              # Dashboard UI components
+        └── app/
+            ├── (frontend)/
+            │   ├── layout.tsx       # Injects template chrome (header/footer)
+            │   ├── page.tsx         # Homepage (hero + features from Tenant)
+            │   ├── blog/            # Blog list + detail (reads from Payload)
+            │   └── dashboard/       # Custom admin dashboard
+            └── (payload)/           # Payload admin panel + API routes
+```
+
+## Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| **Next.js 15** | App Router frontend |
+| **Payload CMS 3** | Headless CMS (collections, auth, API) |
+| **Vercel Postgres** | Database |
+| **Lexical** | Rich text editor (Payload default) |
+| **Tiptap** | Rich text editor (custom dashboard) |
+
+## Quick Start
 
 ```bash
-git clone git@github.com:AlaudaAI/CMS.git
-cd CMS/my-real-estate
-bash setup.sh        # installs deps, seeds data
-npm run dev          # starts the server
+cd my-real-estate
+npm install
+npm run seed    # imports templates into DB, creates tenants and sample posts
+npm run dev
 ```
 
-Open http://localhost:3000 — that's it.
+- **Frontend**: http://localhost:3000
+- **Payload Admin**: http://localhost:3000/admin
+- **Dashboard**: http://localhost:3000/dashboard
 
-**Admin panel:** http://localhost:3000/admin
-**Login:** `admin@platform.com` / `changeme123`
+## Environment Variables
 
-## What's Inside
+| Variable | Purpose | Default |
+|---|---|---|
+| `PAYLOAD_SECRET` | Payload encryption secret | — |
+| `POSTGRES_URL` | Database connection string | — |
 
-| URL | What |
-|---|---|
-| `/` | Homepage (Luxe Realty — real estate template) |
-| `/blog` | Blog posts (tenant-isolated) |
-| `/admin` | Payload CMS admin panel |
+## Default Account
 
-Two demo tenants are seeded: a real estate agency (port 3000) and a law firm (port 3001), each with their own template and blog posts.
-
-## Try It: Create a Blog Post
-
-1. Go to http://localhost:3000/admin and log in (`admin@platform.com` / `changeme123`)
-2. Click **Posts** → **Create New**
-3. Pick a **Tenant** (e.g. Luxe Realty)
-4. Fill in **Title**, **Slug** (e.g. `my-first-post`), and some **Content**
-5. Set **Status** to **Published**, hit **Save**
-6. Visit http://localhost:3000/blog/my-first-post — your post is live
-
-## Using PostgreSQL (optional)
-
-For production or if you prefer Postgres, set `POSTGRES_URL` in your `.env`:
-
-```
-POSTGRES_URL=postgres://localhost:5432/my_cms
-```
-
-## Docs
-
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — System design
-- [TEMPLATE_GUIDE.md](./TEMPLATE_GUIDE.md) — How templates work
+| Email | Password | Role |
+|---|---|---|
+| `admin@platform.com` | `changeme123` | admin |

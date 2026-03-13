@@ -11,18 +11,13 @@ export default async function BlogPage() {
 
   let posts: Awaited<ReturnType<typeof payload.find>>['docs'] = []
   try {
-    if (tenant) {
-      const result = await payload.find({
-        collection: 'posts',
-        where: {
-          status: { equals: 'published' },
-          tenant: { equals: tenant.id },
-        },
-        sort: '-publishedAt',
-        limit: 20,
-      })
-      posts = result.docs
-    }
+    const result = await payload.find({
+      collection: 'posts',
+      where: { status: { equals: 'published' } },
+      sort: '-publishedAt',
+      limit: 20,
+    })
+    posts = result.docs
   } catch {
     // Table may not exist yet before first migration
   }
@@ -30,7 +25,8 @@ export default async function BlogPage() {
   return (
     <>
       <div className="page-header">
-        <h1>Blog</h1>
+        <h1>{tenant?.blog?.heading || 'Blog'}</h1>
+        {tenant?.blog?.sub && <p>{tenant.blog.sub}</p>}
       </div>
 
       {posts.length === 0 ? (

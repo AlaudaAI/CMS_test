@@ -1,72 +1,114 @@
-# Architecture
+# Architecture: CMS + Template Integration
 
-## Overview
+## How It Works Today
 
-Single Next.js 15 app with Payload CMS 3 embedded. Two route groups serve different purposes:
+The system has two independent layers:
+
+1. **Theme** (`src/themes/`) — content configuration (site name, hero copy, nav links, feature descriptions)
+2. **Template** (`template/`) — visual presentation (HTML chrome + CSS tokens + styles)
+
+They are combined at render time in `layout.tsx`:
 
 ```
-src/app/
-  (payload)/          Admin panel + API (Payload-managed)
-    admin/            /admin — content management UI
-    api/              /api/* — auto-generated REST + GraphQL
-    layout.tsx        Imports Payload CSS, wraps with RootLayout
-    custom.scss       Minimal admin style overrides
+template/legal/legal-1/
+  tokens.css    →  <style> in <head>         (CSS variables)
+  chrome.css    →  <style> in <head>         (header/footer styles)
+  chrome.html   →  split on {{content}}      (header HTML before, footer HTML after)
+  config.json   →  <link> tags in <head>     (Google Fonts, icon CDNs)
 
-  (frontend)/         Tenant-facing website
-    page.tsx          / — homepage (hero + features)
-    blog/             /blog, /blog/[slug] — blog listing + detail
-    layout.tsx        Loads tenant config, injects template chrome
-    globals.css       Scoped to .frontend class to avoid admin leaks
+src/themes/lawfirm.ts
+  name          →  replaces {{title}} in chrome.html
+  navLinks      →  replaces {{nav}} with <a> tags
 ```
 
-## Multi-Tenancy
+The template loader (`src/templates/loader.ts`) reads files from disk at build time via `fs.readFileSync`. Layout splits the chrome HTML at `{{content}}` and injects header/footer around the React page content.
 
-Powered by `@payloadcms/plugin-multi-tenant`. Each tenant is isolated by a `tenant` foreign key on content collections.
+### Template File Contract
 
-**Tenant resolution**: `src/lib/tenant.ts` reads the `Host` header and matches it against the `domain` field in the Tenants collection.
+Each template provides 4 files (see `TEMPLATE_STANDARD.md` for full spec):
 
-**Data isolation**: Posts, Media, Services, and Staff are all scoped per tenant. Admins see all tenants; editors see only their assigned tenant.
-
-## Collections
-
-| Collection | Group | Multi-tenant | Purpose |
-|---|---|---|---|
-| Users | Settings | No | Auth, roles (admin / editor) |
-| Templates | Platform | No | HTML/CSS template definitions |
-| Tenants | Platform | No | Site config (domain, branding, nav, SEO) |
-| Posts | Content | Yes | Blog articles with rich text |
-| Media | Content | Yes | Image uploads (processed by Sharp) |
-| Services | Content | Yes | Service listings (extension) |
-| Staff | Content | Yes | Team member profiles (extension) |
-
-## Template System
-
-Templates live in `/template/{category}/{slug}/` with four files:
-
-| File | Purpose |
+| File | Role |
 |---|---|
-| `config.json` | Font URLs, external stylesheets |
-| `tokens.css` | CSS custom properties (`--fg`, `--bg`, `--font`, etc.) |
-| `chrome.html` | Header/footer HTML with `{{title}}`, `{{nav}}`, `{{content}}` placeholders |
-| `chrome.css` | Styles for the header/footer chrome |
+| `tokens.css` | `:root` CSS variables (colors, fonts, spacing) |
+| `chrome.html` | Header + `<main class="content">{{content}}</main>` + footer |
+| `chrome.css` | Styles for chrome elements only |
+| `config.json` | External font/icon CDN URLs |
 
-At runtime, `src/templates/loader.ts` reads template records from the DB. The frontend layout injects tokens + chrome around page content.
+Templates are pure HTML/CSS with 3 placeholders: `{{title}}`, `{{nav}}`, `{{content}}`.
 
-**Available templates**: `real-estate-1`, `real-estate-2`, `legal-1`, `legal-2`
+## Payload CMS Features Used
 
-## Access Control
+### Collections
 
-Defined in `src/access/roles.ts`:
+| Collection | Fields | Used by |
+|---|---|---|
+| **Posts** | title, slug, coverImage, excerpt, contentHtml, status, publishedAt | Blog pages |
+| **Media** | file upload, alt text | Cover images |
+| **Services** | title, slug, description, icon, status | Not yet rendered on frontend |
+| **Staff** | name, slug, role, bio, photo | Not yet rendered on frontend |
+| **Users** | email, password, role (admin/editor) | Auth + dashboard |
 
-- **Admin**: Full CRUD on all collections, sees all tenants
-- **Editor**: Can manage Posts and Media within their assigned tenant
+### APIs & Features
 
-## Key Design Decisions
+- **Local API** (`getPayload` + `payload.find`) — used in blog pages to query posts server-side. No REST/GraphQL calls from the frontend.
+- **Access Control** — role-based (`isAdminOrEditor`) on all content collections; public read.
+- **Upload** — Media collection with `staticDir: 'media'`, image-only MIME filter.
+- **Auth** — Payload's built-in cookie auth, used by the custom dashboard.
+- **Admin Panel** — available at `/admin` as fallback, but a custom dashboard at `/dashboard` is the primary editing UI.
 
-1. **CSS isolation**: Frontend `globals.css` is scoped under `.frontend` to prevent leaking into Payload admin. The admin layout explicitly imports `@payloadcms/next/css`.
+### What Is NOT Used
 
-2. **No custom dashboard**: Uses Payload's built-in admin UI with nav groups (Settings, Content, Platform) rather than a custom React dashboard.
+- REST API from client-side
+- GraphQL
+- Globals
+- Hooks / access policies beyond simple role checks
+- Versions / drafts (only a manual `status` field)
+- Live preview
+- Blocks / layout builder
 
-3. **Template-driven frontend**: Tenants pick a template; the frontend renders it server-side with no client JS framework for the public site.
+## Gaps: What Templates Cannot Express Today
 
-4. **Extension collections**: Industry-specific collections (Services, Staff) live in `collections/extensions/` and are opt-in per template category.
+1. **No dynamic sections** — templates only have `{{content}}`. A template cannot define its own hero, services grid, or team section that pulls from CMS collections.
+2. **No per-page layouts** — every page gets the same chrome. A homepage and a blog post share identical header/footer injection.
+3. **Fixed collections** — `Services` and `Staff` exist in the DB but templates have no way to render them. Adding a new collection requires code changes.
+4. **No component slots** — templates are monolithic HTML. You can't mix CMS-driven blocks with template styling.
+
+## Recommendations for AI-Generated Templates
+
+To let AI generate templates that integrate well with the CMS:
+
+### Short Term (minimal changes)
+
+Add more named slots to `chrome.html`:
+
+```html
+<main class="content">
+  <section class="slot-hero">{{hero}}</section>
+  <section class="slot-services">{{services}}</section>
+  {{content}}
+</main>
+```
+
+The loader would replace `{{services}}` with server-rendered HTML from the Services collection using a simple HTML template string per card. This keeps templates as pure HTML/CSS while giving them access to CMS data.
+
+### Medium Term (block system)
+
+Define a `sections` array in a `page-layout.json` per template:
+
+```json
+[
+  { "type": "hero", "collection": null },
+  { "type": "collection-grid", "collection": "services", "limit": 6 },
+  { "type": "content" },
+  { "type": "collection-list", "collection": "staff" }
+]
+```
+
+Each section type has a corresponding HTML partial in the template folder (`hero.html`, `collection-grid.html`, etc.). The loader assembles the page from these partials, filling each with data from the specified collection. AI generates both the layout config and the partials.
+
+### Key Principles for AI Template Generation
+
+1. **Keep templates as HTML/CSS** — no JS, no React components. This keeps the generation problem simple and the output auditable.
+2. **Use CSS variables for theming** — AI should generate `tokens.css` with the standard variable names. This ensures compatibility with `globals.css`.
+3. **Don't touch collections** — template should adapt to whatever collections exist, not require new ones. Use the slot/block system to map collections to visual sections.
+4. **Provide a preview HTML** — `homepage.html` lets you preview the template without running the CMS. AI can validate its own output.

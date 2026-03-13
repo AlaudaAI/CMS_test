@@ -1,11 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../access/roles'
 
 export const Templates: CollectionConfig = {
   slug: 'templates',
+  hooks: {
+    afterChange: [() => { revalidatePath('/', 'layout') }],
+  },
   admin: {
-    useAsTitle: 'name',
-    defaultColumns: ['name', 'category', 'updatedAt'],
+    useAsTitle: 'slug',
     group: 'Platform',
   },
   access: {
@@ -15,8 +18,7 @@ export const Templates: CollectionConfig = {
     delete: isAdmin,
   },
   fields: [
-    { name: 'name', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true, admin: { position: 'sidebar' } },
+    { name: 'slug', type: 'text', required: true, unique: true },
     {
       name: 'category',
       type: 'select',
@@ -24,19 +26,12 @@ export const Templates: CollectionConfig = {
       options: [
         { label: 'Real Estate', value: 'real-estate' },
         { label: 'Legal', value: 'legal' },
-        { label: 'Restaurant', value: 'restaurant' },
-        { label: 'Healthcare', value: 'healthcare' },
-        { label: 'Other', value: 'other' },
       ],
       admin: { position: 'sidebar' },
     },
-    { name: 'tokensCss', type: 'code', required: true, admin: { language: 'css', description: 'CSS variables (:root)' } },
-    { name: 'chromeCss', type: 'code', required: true, admin: { language: 'css', description: 'Header/footer/nav styles' } },
-    { name: 'chromeHtml', type: 'code', required: true, admin: { language: 'html', description: 'HTML with {{title}}, {{nav}}, {{content}} placeholders' } },
-    {
-      name: 'configJson',
-      type: 'json',
-      admin: { description: '{ "fonts": [...], "externals": [...] }' },
-    },
+    { name: 'tokensCss', type: 'textarea', required: true },
+    { name: 'chromeCss', type: 'textarea', required: true },
+    { name: 'chromeHtml', type: 'textarea', required: true },
+    { name: 'configJson', type: 'textarea', required: true, defaultValue: '{}' },
   ],
 }
