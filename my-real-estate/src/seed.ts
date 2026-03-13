@@ -11,7 +11,18 @@ function readFile(dir: string, name: string): string {
 
 const seed = async () => {
   const payload = await getPayload({ config })
-  await pushDevSchema(payload.db as any, { acceptWarning: true })
+
+  // Auto-press Enter for drizzle-kit interactive prompts (column rename detection)
+  // This selects the default first option ("create column") instead of hanging
+  const autoAnswer = setInterval(() => {
+    process.stdin.emit('keypress', '\r', { name: 'return' })
+  }, 200)
+
+  try {
+    await pushDevSchema(payload.db as any)
+  } finally {
+    clearInterval(autoAnswer)
+  }
 
   // 1. Create admin user
   try {
