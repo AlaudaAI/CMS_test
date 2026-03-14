@@ -30,9 +30,10 @@ export default buildConfig({
   },
   collections: [Users, Media, Posts, Services, Staff, Templates, Tenants],
   plugins: [
-    ...(process.env.BLOB_READ_WRITE_TOKEN
-      ? [vercelBlobStorage({ collections: { media: true }, token: process.env.BLOB_READ_WRITE_TOKEN })]
-      : []),
+    vercelBlobStorage({
+      collections: { media: true },
+      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+    }),
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'default-secret',
