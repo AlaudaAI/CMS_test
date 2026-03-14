@@ -43,28 +43,30 @@ const seed = async () => {
 
     for (const slug of slugs) {
       const dir = path.join(catDir, slug)
-      try {
-        const doc = await payload.create({
-          collection: 'templates',
-          data: {
-            slug,
-            category,
-            tokensCss: readFile(dir, 'tokens.css'),
-            chromeCss: readFile(dir, 'chrome.css'),
-            chromeHtml: readFile(dir, 'chrome.html'),
-            configJson: readFile(dir, 'config.json') || '{}',
-          },
-        })
+      const data = {
+        slug,
+        category,
+        tokensCss: readFile(dir, 'tokens.css'),
+        chromeCss: readFile(dir, 'chrome.css'),
+        chromeHtml: readFile(dir, 'chrome.html'),
+        configJson: readFile(dir, 'config.json') || '{}',
+      }
+
+      // Find existing, then update or create
+      const existing = await payload.find({
+        collection: 'templates',
+        where: { slug: { equals: slug } },
+        limit: 1,
+      })
+
+      if (existing.docs[0]) {
+        await payload.update({ collection: 'templates', id: existing.docs[0].id, data })
+        templateRecords[slug] = existing.docs[0]
+        console.log(`→ Updated template: ${slug}`)
+      } else {
+        const doc = await payload.create({ collection: 'templates', data })
         templateRecords[slug] = doc
-        console.log(`✓ Imported template: ${slug}`)
-      } catch {
-        const existing = await payload.find({
-          collection: 'templates',
-          where: { slug: { equals: slug } },
-          limit: 1,
-        })
-        if (existing.docs[0]) templateRecords[slug] = existing.docs[0]
-        console.log(`→ Template already exists: ${slug}`)
+        console.log(`✓ Created template: ${slug}`)
       }
     }
   }
