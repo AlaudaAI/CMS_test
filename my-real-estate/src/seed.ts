@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { getPayload } from 'payload'
 import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
@@ -8,6 +9,8 @@ function readFile(dir: string, name: string): string {
   try { return fs.readFileSync(path.join(dir, name), 'utf-8') }
   catch { return '' }
 }
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const seed = async () => {
   const payload = await getPayload({ config })
@@ -25,7 +28,8 @@ const seed = async () => {
   }
 
   // 2. Import templates from disk
-  const templateDir = path.join(process.cwd(), 'template')
+  const templateDir = path.resolve(__dirname, '..', 'template')
+  console.log(`Template dir: ${templateDir} (exists: ${fs.existsSync(templateDir)})`)
   const categories = ['real-estate', 'legal']
   const templateRecords: Record<string, { id: number | string }> = {}
 
