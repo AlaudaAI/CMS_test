@@ -8,7 +8,9 @@ export const Users: CollectionConfig = {
     description: 'Manage user accounts. Admins can create and manage all users. Editors can create and edit posts.',
     group: 'Settings',
   },
-  auth: true,
+  auth: {
+    maxLoginAttempts: 0,
+  },
   access: {
     read: isAdmin,
     create: isAdmin,
