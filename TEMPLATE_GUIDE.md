@@ -324,12 +324,9 @@ Both are multi-tenant (each tenant has their own records) and accessible at `/ap
 
 ---
 
-## Usage
+## Tools
 
 ```bash
-# Set template via environment variable
-NEXT_PUBLIC_SITE_TEMPLATE=legal/legal-1 npm run dev
-
-# Convert legacy templates to standard format
+# Convert a legacy HTML template to the standard 4-file format
 node scripts/convert-template.js template/category/name
 ```

@@ -59,7 +59,6 @@ my_CMS_test/
 | **Payload CMS 3** | Headless CMS (collections, auth, API) |
 | **Vercel Postgres** | Database |
 | **Lexical** | Rich text editor (Payload default) |
-| **Tiptap** | Rich text editor (custom dashboard) |
 
 ## Quick Start
 
