@@ -15,7 +15,7 @@ interface PostData {
   coverImage?: { url?: string; id?: string } | string | null
 }
 
-export default function PostForm({ post, mode }: { post?: PostData; mode: 'create' | 'edit' }) {
+export default function PostForm({ post, mode, category }: { post?: PostData; mode: 'create' | 'edit'; category?: string }) {
   const router = useRouter()
   const [title, setTitle] = useState(post?.title || '')
   const [slug, setSlug] = useState(post?.slug || '')
@@ -38,13 +38,16 @@ export default function PostForm({ post, mode }: { post?: PostData; mode: 'creat
     setError('')
     setSaving(true)
 
-    const body = {
+    const body: Record<string, unknown> = {
       title,
       slug: slug || generateSlug(title),
       excerpt,
       contentHtml,
       status,
       publishedAt: publishedAt || null,
+    }
+    if (category) {
+      body.category = category
     }
 
     try {

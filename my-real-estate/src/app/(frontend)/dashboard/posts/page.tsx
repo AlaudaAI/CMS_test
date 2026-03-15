@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../payload.config'
 import { requireAuth } from '../../../../lib/auth'
-import { getCurrentTenant } from '../../../../lib/tenant'
+import { getCurrentTenant, getTenantCategory } from '../../../../lib/tenant'
 import DashboardShell from '../../../../components/DashboardShell'
 import Link from 'next/link'
 import { DeletePostButton } from './DeletePostButton'
@@ -12,8 +12,14 @@ export default async function PostsPage() {
   const user = await requireAuth()
   const tenant = await getCurrentTenant()
   const payload = await getPayload({ config })
+  const category = getTenantCategory(tenant)
+  const where: any = {}
+  if (category) {
+    where.category = { equals: category }
+  }
   const { docs: posts } = await payload.find({
     collection: 'posts',
+    where,
     sort: '-updatedAt',
     limit: 100,
   })

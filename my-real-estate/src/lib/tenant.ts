@@ -27,3 +27,13 @@ export async function getCurrentTenant() {
 
   return fallback.docs[0] || null
 }
+
+/** Extract the template category (e.g. 'real-estate' | 'legal') from a tenant. */
+export function getTenantCategory(tenant: any): string | undefined {
+  if (!tenant) return undefined
+  const tmpl = tenant.template
+  if (tmpl && typeof tmpl === 'object' && 'category' in tmpl) {
+    return (tmpl as { category: string }).category
+  }
+  return undefined
+}
