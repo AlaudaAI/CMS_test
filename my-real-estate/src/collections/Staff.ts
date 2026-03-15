@@ -19,6 +19,7 @@ export const Staff: CollectionConfig = {
       name: 'category',
       type: 'select',
       required: true,
+      defaultValue: 'real-estate',
       options: [
         { label: 'Real Estate', value: 'real-estate' },
         { label: 'Legal', value: 'legal' },
