@@ -1,7 +1,7 @@
 import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
 import Link from 'next/link'
-import { getCurrentTenant } from '../../../lib/tenant'
+import { getCurrentTenant, getTenantCategory } from '../../../lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,11 +9,17 @@ export default async function BlogPage() {
   const tenant = await getCurrentTenant()
   const payload = await getPayload({ config: configPromise })
 
+  const category = getTenantCategory(tenant)
+
   let posts: Awaited<ReturnType<typeof payload.find>>['docs'] = []
   try {
+    const where: any = { status: { equals: 'published' } }
+    if (category) {
+      where.category = { equals: category }
+    }
     const result = await payload.find({
       collection: 'posts',
-      where: { status: { equals: 'published' } },
+      where,
       sort: '-publishedAt',
       limit: 20,
     })

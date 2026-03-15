@@ -15,6 +15,16 @@ export const Services: CollectionConfig = {
     delete: isAdminOrEditor,
   },
   fields: [
+    {
+      name: 'category',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Real Estate', value: 'real-estate' },
+        { label: 'Legal', value: 'legal' },
+      ],
+      admin: { position: 'sidebar' },
+    },
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, admin: { position: 'sidebar' } },
     { name: 'description', type: 'textarea', required: true },

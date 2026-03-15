@@ -19,6 +19,16 @@ export const Media: CollectionConfig = {
   },
   fields: [
     {
+      name: 'category',
+      type: 'select',
+      required: true,
+      options: [
+        { label: 'Real Estate', value: 'real-estate' },
+        { label: 'Legal', value: 'legal' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
       name: 'alt',
       type: 'text',
       required: true,

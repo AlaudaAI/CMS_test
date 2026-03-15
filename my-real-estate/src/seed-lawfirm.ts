@@ -21,6 +21,7 @@ const seed = async () => {
 
   const posts = [
     {
+      category: 'legal',
       title: 'What to Do After a Car Accident: A Legal Guide',
       slug: 'car-accident-legal-guide',
       excerpt: 'Key steps to protect your rights and strengthen your claim after a motor vehicle accident.',
@@ -29,6 +30,7 @@ const seed = async () => {
       contentHtml: '<p>A car accident can be overwhelming. Knowing the right steps to take can make a significant difference in any future legal proceedings.</p><h2>1. Document Everything</h2><p>Take photographs of the scene, vehicle damage, and any visible injuries. Collect contact information from all parties involved and any witnesses.</p><h2>2. Seek Medical Attention</h2><p>Even if you feel fine, see a doctor within 24 hours. Some injuries are not immediately apparent, and medical records are crucial evidence.</p><h2>3. Do Not Admit Fault</h2><p>Be careful about what you say at the scene and to insurance adjusters. Statements can be used against you later.</p><h2>4. Contact an Attorney</h2><p>An experienced personal injury attorney can help you navigate insurance claims, negotiate settlements, and protect your legal rights throughout the process.</p>',
     },
     {
+      category: 'legal',
       title: 'Understanding Business Formation: LLC vs. Corporation',
       slug: 'llc-vs-corporation',
       excerpt: 'Choosing the right business structure is one of the most important decisions a founder makes.',
@@ -37,6 +39,7 @@ const seed = async () => {
       contentHtml: '<p>When starting a business, the legal structure you choose affects everything from personal liability to taxes and fundraising.</p><h2>Limited Liability Company (LLC)</h2><p>LLCs offer flexibility in management and tax treatment. Profits pass through to members\u2019 personal tax returns, avoiding double taxation. They are ideal for small businesses and startups that want simplicity.</p><h2>Corporation (C-Corp)</h2><p>C-Corps are better suited for companies that plan to raise venture capital or go public. They offer unlimited growth potential through stock issuance but face double taxation on profits and dividends.</p><h2>Our Recommendation</h2><p>There is no one-size-fits-all answer. Schedule a consultation with our corporate law team to determine which structure best aligns with your goals and growth plans.</p>',
     },
     {
+      category: 'legal',
       title: 'Estate Planning Essentials Every Family Should Know',
       slug: 'estate-planning-essentials',
       excerpt: 'A well-crafted estate plan protects your family and ensures your wishes are honored.',

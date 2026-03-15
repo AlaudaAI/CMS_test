@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 import config from '../../../../../../payload.config'
 import { requireAuth } from '../../../../../../lib/auth'
-import { getCurrentTenant } from '../../../../../../lib/tenant'
+import { getCurrentTenant, getTenantCategory } from '../../../../../../lib/tenant'
 import DashboardShell from '../../../../../../components/DashboardShell'
 import PostForm from '../../../../../../components/PostForm'
 import { notFound } from 'next/navigation'
@@ -21,6 +21,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     notFound()
   }
 
+  const category = getTenantCategory(tenant) || 'real-estate'
   const postData = {
     id: String(post.id),
     title: post.title,
@@ -38,7 +39,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
         <div className="dash-page-header">
           <h1>Edit Post</h1>
         </div>
-        <PostForm post={postData} mode="edit" />
+        <PostForm post={postData} mode="edit" category={category} />
       </div>
     </DashboardShell>
   )
