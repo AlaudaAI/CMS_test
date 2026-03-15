@@ -82,22 +82,7 @@ const seed = async () => {
     })
     console.log('✓ Admin user created: admin@platform.com / changeme123')
   } catch {
-    // User exists — reset password and unlock in case account is locked
-    const existing = await payload.find({
-      collection: 'users',
-      where: { email: { equals: 'admin@platform.com' } },
-      limit: 1,
-    })
-    if (existing.docs[0]) {
-      await payload.update({
-        collection: 'users',
-        id: existing.docs[0].id,
-        data: { password: 'changeme123', loginAttempts: 0, lockUntil: null } as any,
-      })
-      console.log('→ Admin user already exists — password reset & account unlocked')
-    } else {
-      console.log('→ Admin user creation failed')
-    }
+    console.log('→ Admin user already exists')
   }
 
   // 2. Import templates from disk
