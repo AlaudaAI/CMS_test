@@ -5,7 +5,7 @@ import { isAdmin } from '../access/roles'
 export const Tenants: CollectionConfig = {
   slug: 'tenants',
   hooks: {
-    afterChange: [() => { revalidatePath('/', 'layout') }],
+    afterChange: [() => { try { revalidatePath('/', 'layout') } catch {} }],
   },
   admin: {
     useAsTitle: 'siteName',

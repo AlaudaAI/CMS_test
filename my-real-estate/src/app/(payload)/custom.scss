@@ -1,6 +1,52 @@
-/* Minimal admin overrides */
+/* Custom admin styles */
 
-/* Rich text editor - ensure usable height */
+/* Cleaner field descriptions */
+.field-description {
+  font-size: 13px !important;
+  color: #6b7280 !important;
+  margin-top: 4px !important;
+}
+
+/* Collection description banner */
+.collection-list__header .collection-list__sub-header,
+.doc-header__description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Better spacing for form fields */
+.render-fields .field-type {
+  margin-bottom: 1.5rem;
+}
+
+/* Sidebar fields - tighter spacing */
+.doc-controls__sidebar .field-type {
+  margin-bottom: 1rem;
+}
+
+/* Richer text editor - larger min height for better visibility */
 .rich-text-lexical .ContentEditable__root {
-  min-height: 200px;
+  min-height: 300px !important;
+}
+
+/* Upload field - clearer styling */
+.upload__dropzone {
+  border: 2px dashed #d1d5db !important;
+  border-radius: 8px !important;
+  transition: border-color 0.2s !important;
+}
+
+.upload__dropzone:hover {
+  border-color: #9ca3af !important;
+}
+
+/* Group headers */
+.group-field__wrap > .group-field__header {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }

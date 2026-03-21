@@ -16,6 +16,17 @@ export const Posts: CollectionConfig = {
     delete: isAdminOrEditor,
   },
   fields: [
+    {
+      name: 'category',
+      type: 'select',
+      required: true,
+      defaultValue: 'real-estate',
+      options: [
+        { label: 'Real Estate', value: 'real-estate' },
+        { label: 'Legal', value: 'legal' },
+      ],
+      admin: { position: 'sidebar' },
+    },
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, admin: { position: 'sidebar' } },
     { name: 'coverImage', type: 'upload', relationTo: 'media' },

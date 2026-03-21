@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { getPayload } from 'payload'
+import { pushDevSchema } from '@payloadcms/drizzle'
 import config from './payload.config'
 
 function readFile(dir: string, name: string): string {
@@ -8,71 +10,11 @@ function readFile(dir: string, name: string): string {
   catch { return '' }
 }
 
-/**
- * Non-interactive pushSchema: calls drizzle-kit's pushSchema directly,
- * auto-answers hanji column-rename prompts via keypress emits,
- * and skips the prompts-library warning confirmation (just logs & applies).
- */
-async function pushSchemaNoPrompt(adapter: any) {
-  const { pushSchema } = adapter.requireDrizzleKit()
-
-  // Auto-press Enter for hanji interactive prompts (column rename detection).
-  // Selects the default first option ("create column") instead of hanging.
-  const autoAnswer = setInterval(() => {
-    process.stdin.emit('keypress', '\r', { name: 'return' })
-  }, 200)
-
-  let apply: () => Promise<void>
-  let warnings: string[]
-  let hasDataLoss: boolean
-
-  try {
-    const result = await pushSchema(
-      adapter.schema,
-      adapter.drizzle,
-      adapter.schemaName ? [adapter.schemaName] : undefined,
-      adapter.tablesFilter,
-      adapter.extensions?.postgis ? ['postgis'] : undefined,
-    )
-    apply = result.apply
-    warnings = result.warnings
-    hasDataLoss = result.hasDataLoss
-  } finally {
-    clearInterval(autoAnswer)
-  }
-
-  if (warnings.length) {
-    console.log(`Schema push warnings:\n${warnings.join('\n')}`)
-    if (hasDataLoss) console.log('DATA LOSS WARNING: possible data loss detected.')
-    console.log('Auto-accepting warnings and applying schema changes...')
-  }
-
-  await apply()
-
-  // Update payload_migrations bookkeeping
-  const migrationsTable = adapter.schemaName
-    ? `"${adapter.schemaName}"."payload_migrations"`
-    : '"payload_migrations"'
-  const devPush = await adapter.execute({
-    drizzle: adapter.drizzle,
-    raw: `SELECT * FROM ${migrationsTable} WHERE batch = '-1'`,
-  })
-  if (!devPush.rows.length) {
-    await adapter.drizzle.insert(adapter.tables.payload_migrations).values({
-      name: 'dev',
-      batch: -1,
-    })
-  } else {
-    await adapter.execute({
-      drizzle: adapter.drizzle,
-      raw: `UPDATE ${migrationsTable} SET updated_at = CURRENT_TIMESTAMP WHERE batch = '-1'`,
-    })
-  }
-}
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const seed = async () => {
   const payload = await getPayload({ config })
-  await pushSchemaNoPrompt(payload.db)
+  await pushDevSchema(payload.db as any)
 
   // 1. Create admin user
   try {
@@ -86,7 +28,8 @@ const seed = async () => {
   }
 
   // 2. Import templates from disk
-  const templateDir = path.join(process.cwd(), 'template')
+  const templateDir = path.resolve(__dirname, '..', 'template')
+  console.log(`Template dir: ${templateDir} (exists: ${fs.existsSync(templateDir)})`)
   const categories = ['real-estate', 'legal']
   const templateRecords: Record<string, { id: number | string }> = {}
 
@@ -100,28 +43,30 @@ const seed = async () => {
 
     for (const slug of slugs) {
       const dir = path.join(catDir, slug)
-      try {
-        const doc = await payload.create({
-          collection: 'templates',
-          data: {
-            slug,
-            category,
-            tokensCss: readFile(dir, 'tokens.css'),
-            chromeCss: readFile(dir, 'chrome.css'),
-            chromeHtml: readFile(dir, 'chrome.html'),
-            configJson: readFile(dir, 'config.json') || '{}',
-          },
-        })
+      const data = {
+        slug,
+        category,
+        tokensCss: readFile(dir, 'tokens.css'),
+        chromeCss: readFile(dir, 'chrome.css'),
+        chromeHtml: readFile(dir, 'chrome.html'),
+        configJson: readFile(dir, 'config.json') || '{}',
+      }
+
+      // Find existing, then update or create
+      const existing = await payload.find({
+        collection: 'templates',
+        where: { slug: { equals: slug } },
+        limit: 1,
+      })
+
+      if (existing.docs[0]) {
+        await payload.update({ collection: 'templates', id: existing.docs[0].id, data })
+        templateRecords[slug] = existing.docs[0]
+        console.log(`→ Updated template: ${slug}`)
+      } else {
+        const doc = await payload.create({ collection: 'templates', data })
         templateRecords[slug] = doc
-        console.log(`✓ Imported template: ${slug}`)
-      } catch {
-        const existing = await payload.find({
-          collection: 'templates',
-          where: { slug: { equals: slug } },
-          limit: 1,
-        })
-        if (existing.docs[0]) templateRecords[slug] = existing.docs[0]
-        console.log(`→ Template already exists: ${slug}`)
+        console.log(`✓ Created template: ${slug}`)
       }
     }
   }
@@ -190,6 +135,7 @@ const seed = async () => {
   // 4. Seed blog posts
   const posts = [
     {
+      category: 'real-estate',
       title: '5 Tips for First-Time Home Buyers in 2026',
       slug: 'first-time-buyer-tips-2026',
       excerpt: 'Navigate the real estate market with confidence using these essential tips for new buyers.',
@@ -198,6 +144,7 @@ const seed = async () => {
       contentHtml: '<p>Buying your first home is one of the most exciting milestones in life. Here are five tips to help you navigate the process with confidence.</p><h2>1. Get Pre-Approved First</h2><p>Before you start browsing listings, get a mortgage pre-approval. This tells sellers you are a serious buyer and helps you understand your budget.</p><h2>2. Research the Neighborhood</h2><p>Look beyond the property itself. Consider commute times, school districts, local amenities, and future development plans in the area.</p><h2>3. Do Not Skip the Inspection</h2><p>A professional home inspection can reveal hidden issues that could cost thousands to repair. Always make your offer contingent on a satisfactory inspection.</p><h2>4. Think Long-Term</h2><p>Consider how your needs might change over the next 5-10 years. A home that works for you now should also accommodate future plans.</p><h2>5. Work with an Experienced Agent</h2><p>A knowledgeable real estate agent can negotiate on your behalf, identify potential issues, and guide you through the entire closing process.</p>',
     },
     {
+      category: 'real-estate',
       title: 'Real Estate Market Trends to Watch This Spring',
       slug: 'market-trends-spring-2026',
       excerpt: 'Interest rates, inventory levels, and emerging neighborhoods — here is what is shaping the market.',
@@ -206,6 +153,7 @@ const seed = async () => {
       contentHtml: '<p>Spring is traditionally the busiest season for real estate. Here is what we are seeing in the market this year.</p><h2>Interest Rates Stabilizing</h2><p>After years of volatility, mortgage rates have begun to stabilize in the mid-5% range, bringing more buyers back to the market.</p><h2>Inventory Is Growing</h2><p>New construction and returning sellers are increasing inventory levels, giving buyers more choices and reducing bidding wars.</p><h2>Suburban Demand Remains Strong</h2><p>Remote and hybrid work continues to drive demand for suburban homes with dedicated office spaces and larger outdoor areas.</p>',
     },
     {
+      category: 'real-estate',
       title: 'How to Stage Your Home for a Quick Sale',
       slug: 'home-staging-guide',
       excerpt: 'Simple staging techniques that help your property stand out and sell faster.',

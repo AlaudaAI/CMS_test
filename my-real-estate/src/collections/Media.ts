@@ -14,10 +14,21 @@ export const Media: CollectionConfig = {
     delete: isAdminOrEditor,
   },
   upload: {
-    staticDir: '/tmp/media',
+    staticDir: 'media',
     mimeTypes: ['image/*'],
   },
   fields: [
+    {
+      name: 'category',
+      type: 'select',
+      required: true,
+      defaultValue: 'real-estate',
+      options: [
+        { label: 'Real Estate', value: 'real-estate' },
+        { label: 'Legal', value: 'legal' },
+      ],
+      admin: { position: 'sidebar' },
+    },
     {
       name: 'alt',
       type: 'text',
