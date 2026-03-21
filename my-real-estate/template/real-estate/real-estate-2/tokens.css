@@ -1,0 +1,20 @@
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --border: #000000;
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --nav-bg-scroll: rgba(255, 255, 255, 0.95);
+  --radius: 24px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+  --font: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-secondary: 'Space Mono', 'Courier New', Courier, monospace;
+  --base: 16px;
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 64px;
+  --spacing-2xl: 80px;
+  --transition: 0.3s ease;
+}

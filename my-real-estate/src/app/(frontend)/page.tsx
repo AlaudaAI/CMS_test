@@ -1,23 +1,24 @@
 import { getCurrentTenant } from '../../lib/tenant'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const tenant = await getCurrentTenant()
   if (!tenant) return null
 
-  const hero = tenant.hero as { heading?: string; sub?: string; cta?: string } | undefined
-  const features = (tenant.features || []) as { title: string; desc: string }[]
-
   return (
     <>
       <section className="hero">
-        <h1>{hero?.heading || tenant.siteName || tenant.name}</h1>
-        {hero?.sub && <p>{hero.sub}</p>}
-        {hero?.cta && <a href="/blog" className="hero-cta">{hero.cta}</a>}
+        <h1>{tenant.hero?.heading}</h1>
+        <p>{tenant.hero?.sub}</p>
+        {tenant.hero?.cta && (
+          <a href="/blog" className="hero-cta">{tenant.hero.cta}</a>
+        )}
       </section>
 
-      {features.length > 0 && (
+      {tenant.features && tenant.features.length > 0 && (
         <section className="features">
-          {features.map((f) => (
+          {tenant.features.map((f: { title: string; desc: string }) => (
             <div key={f.title} className="feature-card">
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
