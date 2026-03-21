@@ -14,7 +14,7 @@ export const Media: CollectionConfig = {
     delete: isAdminOrEditor,
   },
   upload: {
-    staticDir: 'media',
+    staticDir: '/tmp/media',
     mimeTypes: ['image/*'],
   },
   fields: [

@@ -10,3 +10,6 @@ src/payload-types.ts
 
 data/*.db
 data/*.db-*
+
+# SQLite database
+data/
