@@ -5,12 +5,12 @@
 The system has two independent layers:
 
 1. **Theme** (`src/themes/`) — content configuration (site name, hero copy, nav links, feature descriptions)
-2. **Template** (`template/`) — visual presentation (HTML chrome + CSS tokens + styles)
+2. **Template** (`my-real-estate/template/`) — visual presentation (HTML chrome + CSS tokens + styles)
 
 They are combined at render time in `layout.tsx`:
 
 ```
-template/legal/legal-1/
+my-real-estate/template/legal/legal-1/
   tokens.css    →  <style> in <head>         (CSS variables)
   chrome.css    →  <style> in <head>         (header/footer styles)
   chrome.html   →  split on {{content}}      (header HTML before, footer HTML after)
@@ -25,7 +25,7 @@ The template loader (`src/templates/loader.ts`) reads files from disk at build t
 
 ### Template File Contract
 
-Each template provides 4 files (see `TEMPLATE_STANDARD.md` for full spec):
+Each template provides 4 files (see `TEMPLATE_GUIDE.md` for full spec):
 
 | File | Role |
 |---|---|

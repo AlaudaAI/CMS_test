@@ -24,18 +24,17 @@ All three are decoupled and composed at runtime in `layout.tsx`.
 
 ```
 my_CMS_test/
-├── template/                        # Visual templates (pure HTML/CSS)
-│   ├── _reference/                  #   Reference template (starting point)
-│   ├── real-estate/
-│   │   ├── real-estate-1/           #   Brutalist grid layout
-│   │   └── real-estate-2/           #   Editorial / magazine layout
-│   └── legal/
-│       ├── legal-1/                 #   Sidebar navigation layout
-│       └── legal-2/                 #   Classic top-nav layout
-│
 ├── TEMPLATE_GUIDE.md                # Template spec + authoring guide
 │
 └── my-real-estate/                  # Next.js + Payload app
+    ├── template/                    # Visual templates (pure HTML/CSS)
+    │   ├── _reference/              #   Reference template (starting point)
+    │   ├── real-estate/
+    │   │   ├── real-estate-1/       #   Brutalist grid layout
+    │   │   └── real-estate-2/       #   Editorial / magazine layout
+    │   └── legal/
+    │       ├── legal-1/             #   Sidebar navigation layout
+    │       └── legal-2/             #   Classic top-nav layout
     └── src/
         ├── payload.config.ts        # Payload config (collections, DB, editor)
         ├── collections/             # Posts, Media, Services, Staff, Users, Templates, Tenants

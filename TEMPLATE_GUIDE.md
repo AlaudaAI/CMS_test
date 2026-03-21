@@ -29,10 +29,10 @@ Templates don't know about collections. Collections don't know about templates. 
 
 ## File Structure
 
-Each template lives in `template/{category}/{slug}/` with 4 required files and 2 optional preview files:
+Each template lives in `template/{category}/{slug}/` (inside `my-real-estate/`) with 4 required files and 2 optional preview files:
 
 ```
-template/{category}/{slug}/
+my-real-estate/template/{category}/{slug}/
   tokens.css        CSS custom properties (required)
   chrome.html       Header + content slot + footer (required)
   chrome.css        Styles for chrome elements (required)
@@ -41,7 +41,7 @@ template/{category}/{slug}/
   subpage.html      Full preview subpage (optional)
 ```
 
-A reference template is available at `template/_reference/`.
+A reference template is available at `my-real-estate/template/_reference/`.
 
 ---
 
@@ -201,9 +201,9 @@ If you have a full HTML page, split it into the 4 files:
 ### 1. Create template files on disk
 
 ```bash
-mkdir -p template/dental/dental-1
+mkdir -p my-real-estate/template/dental/dental-1
 # Create the 4 files (tokens.css, chrome.html, chrome.css, config.json)
-# Use template/_reference/ as a starting point
+# Use my-real-estate/template/_reference/ as a starting point
 ```
 
 ### 2. Add category to Templates collection (if new)
@@ -329,7 +329,4 @@ Both are multi-tenant (each tenant has their own records) and accessible at `/ap
 ```bash
 # Set template via environment variable
 NEXT_PUBLIC_SITE_TEMPLATE=legal/legal-1 npm run dev
-
-# Convert legacy templates to standard format
-node scripts/convert-template.js template/category/name
 ```

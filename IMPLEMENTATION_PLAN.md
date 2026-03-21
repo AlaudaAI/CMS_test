@@ -70,7 +70,7 @@ src/lib/auth.ts                         # Payload handles auth internally
 
 ### 1.2 Migrate Existing Templates
 
-Write a one-time seed script that reads from `/template/` directory and creates records in the `templates` collection. After migration, `/template/` becomes reference-only.
+Write a one-time seed script that reads from `my-real-estate/template/` directory and creates records in the `templates` collection.
 
 ### 1.3 Update Template Loader
 
@@ -289,7 +289,7 @@ src/seed-lawfirm.ts   # Hardcoded for "Sterling & Associates"
 
 **New**: `src/seed.ts` that:
 1. Creates a platform admin user
-2. Seeds all templates from `/template/` directory into Templates collection
+2. Seeds all templates from `my-real-estate/template/` directory into Templates collection
 3. Creates 2 example tenants (real-estate, law-firm) with sample posts
 
 ### 5.2 Tenant Onboarding Flow (Future)
